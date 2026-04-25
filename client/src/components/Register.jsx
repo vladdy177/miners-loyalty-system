@@ -2,7 +2,8 @@ import React, { useState, useEffect } from "react";
 import axios from "axios";
 
 const Register = () => {
-  // 1. Local state for form data
+  // 1. STATE: This is the "memory" of your component.
+  // We store the values the user types here.
   const [formData, setFormData] = useState({
     email: "",
     firstName: "",
@@ -12,139 +13,107 @@ const Register = () => {
     homeBranchId: "",
   });
 
+  // 2. STATE: This stores the list of cafes fetched from the database.
   const [branches, setBranches] = useState([]);
+  
+  // 3. STATE: This stores the success or error message to show the user.
   const [message, setMessage] = useState("");
 
-  // 2. Fetch branches from Backend when component loads
+  // 4. USEEFFECT: This code runs only ONCE when the page first loads.
+  // It asks the Backend for the list of coffee shops (Letná, etc.).
   useEffect(() => {
     const fetchBranches = async () => {
       try {
-        const res = await axios.get("import.meta.env.VITE_API_URL/api/branches");
-        setBranches(res.data);
+        const apiUrl = import.meta.env.VITE_API_URL;
+        const res = await axios.get(`${apiUrl}/api/branches`);
+        setBranches(res.data); // Put the list into the "branches" state
       } catch (err) {
-        console.error(err, "Chyba při načítání poboček");
+        console.error("Error fetching branches from DB", err);
       }
     };
     fetchBranches();
   }, []);
 
-  // 3. Handle input changes
+  // 5. EVENT HANDLER: This runs every time the user types a letter.
+  // It updates the "formData" memory.
   const handleChange = (e) => {
-    setFormData({ ...formData, [e.target.name]: e.target.value });
+    const { name, value } = e.target;
+    setFormData({ 
+        ...formData, // Keep all existing data
+        [name]: value // Update only the field that changed (e.g., email)
+    });
   };
 
-  // 4. Submit form to Backend
+  // 6. SUBMIT HANDLER: This runs when the user clicks the button.
   const handleSubmit = async (e) => {
-    e.preventDefault();
+    e.preventDefault(); // Prevents the browser from refreshing the page
     try {
-      const res = await axios.post(
-        "import.meta.env.VITE_API_URL/api/register",
-        formData,
-      );
-      setMessage("Registrace proběhla úspěšně! Vítejte v The Miners.");
-      console.log(res.data);
+      const apiUrl = import.meta.env.VITE_API_URL;
+      
+      // We only care that the request completes successfully.
+      await axios.post(`${apiUrl}/api/register`, formData);
+      
+      setMessage("Registration successful!");
     } catch (err) {
-      setMessage(err.response?.data?.error || "Chyba při registraci");
+      // If the server returns an error (like 400 or 500), this code runs.
+      setMessage(err.response?.data?.error || "Registration failed");
     }
   };
 
+  // 7. THE UI: Plain HTML structure without styles.
   return (
-    <form onSubmit={handleSubmit} className="space-y-4">
-      <div>
-        <label className="block text-sm font-medium text-gray-700">Jméno</label>
-        <input
-          type="text"
-          name="firstName"
-          required
-          onChange={handleChange}
-          className="mt-1 block w-full border border-gray-300 rounded-md p-2"
-        />
-      </div>
-
-      <div>
-        <label className="block text-sm font-medium text-gray-700">
-          Příjmení
-        </label>
-        <input
-          type="text"
-          name="lastName"
-          onChange={handleChange}
-          className="mt-1 block w-full border border-gray-300 rounded-md p-2"
-        />
-      </div>
-
-      <div>
-        <label className="block text-sm font-medium text-gray-700">Email</label>
-        <input
-          type="email"
-          name="email"
-          required
-          onChange={handleChange}
-          className="mt-1 block w-full border border-gray-300 rounded-md p-2"
-        />
-      </div>
-
-      <div className="grid grid-cols-2 gap-4">
+    <div>
+      <h2>Register</h2>
+      
+      <form onSubmit={handleSubmit}>
         <div>
-          <label className="block text-sm font-medium text-gray-700">
-            Pohlaví
-          </label>
-          <select
-            name="gender"
-            onChange={handleChange}
-            className="mt-1 block w-full border border-gray-300 rounded-md p-2 bg-white"
-          >
-            <option value="unspecified">Neuvedeno</option>
-            <option value="male">Muž</option>
-            <option value="female">Žena</option>
-            <option value="other">Jiné</option>
+          <label>First Name:</label>
+          <input type="text" name="firstName" required onChange={handleChange} />
+        </div>
+
+        <div>
+          <label>Last Name:</label>
+          <input type="text" name="lastName" onChange={handleChange} />
+        </div>
+
+        <div>
+          <label>Email:</label>
+          <input type="email" name="email" required onChange={handleChange} />
+        </div>
+
+        <div>
+          <label>Gender:</label>
+          <select name="gender" onChange={handleChange}>
+            <option value="unspecified">Unspecified</option>
+            <option value="male">Male</option>
+            <option value="female">Female</option>
+            <option value="other">Other</option>
           </select>
         </div>
+
         <div>
-          <label className="block text-sm font-medium text-gray-700">
-            Datum narození
-          </label>
-          <input
-            type="date"
-            name="birthDate"
-            onChange={handleChange}
-            className="mt-1 block w-full border border-gray-300 rounded-md p-2"
-          />
+          <label>Birth Date:</label>
+          <input type="date" name="birthDate" onChange={handleChange} />
         </div>
-      </div>
 
-      <div>
-        <label className="block text-sm font-medium text-gray-700">
-          Domovská kavárna
-        </label>
-        <select
-          name="homeBranchId"
-          required
-          onChange={handleChange}
-          className="mt-1 block w-full border border-gray-300 rounded-md p-2 bg-white"
-        >
-          <option value="">Vyberte pobočku</option>
-          {branches.map((branch) => (
-            <option key={branch.id} value={branch.id}>
-              {branch.name}
-            </option>
-          ))}
-        </select>
-      </div>
+        <div>
+          <label>Favorite Cafe (Branch):</label>
+          <select name="homeBranchId" required onChange={handleChange}>
+            <option value="">Select a branch</option>
+            {branches.map((branch) => (
+              <option key={branch.id} value={branch.id}>
+                {branch.name}
+              </option>
+            ))}
+          </select>
+        </div>
 
-      <button
-        type="submit"
-        className="w-full bg-black text-white font-bold py-3 rounded-md hover:bg-gray-800 transition duration-300"
-      >
-        Zaregistrovat se
-      </button>
+        <button type="submit">Register</button>
+      </form>
 
-      {message && (
-        <p className="mt-4 text-center text-sm font-semibold text-blue-600">
-          {message}
-        </p>
-      )}
-    </form>
+      {/* Show message if it exists */}
+      {message && <p>{message}</p>}
+    </div>
   );
 };
 
