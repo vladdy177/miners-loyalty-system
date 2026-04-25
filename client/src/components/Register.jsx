@@ -19,7 +19,7 @@ const Register = () => {
   useEffect(() => {
     const fetchBranches = async () => {
       try {
-        const res = await axios.get("http://localhost:5000/api/branches");
+        const res = await axios.get("import.meta.env.VITE_API_URL/api/branches");
         setBranches(res.data);
       } catch (err) {
         console.error(err, "Chyba při načítání poboček");
@@ -38,7 +38,7 @@ const Register = () => {
     e.preventDefault();
     try {
       const res = await axios.post(
-        "http://localhost:5000/api/register",
+        "import.meta.env.VITE_API_URL/api/register",
         formData,
       );
       setMessage("Registrace proběhla úspěšně! Vítejte v The Miners.");
