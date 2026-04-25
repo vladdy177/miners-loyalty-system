@@ -1,0 +1,71 @@
+/* Register.module.css */
+
+.container {
+    max-width: 400px;
+    margin: 40px auto;
+    padding: 30px;
+    background-color: #ffffff;
+    border: 1px solid #eeeeee;
+    border-radius: 4px;
+    font-family: 'TheMinersFont', sans-serif;
+    font-weight: medium;
+}
+
+.title {
+    font-size: 24px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin-bottom: 25px;
+    text-align: center;
+}
+
+.formGroup {
+    display: flex;
+    flex-direction: column;
+    margin-bottom: 15px;
+}
+
+.label {
+    font-size: 12px;
+    font-weight: 600;
+    text-transform: uppercase;
+    margin-bottom: 5px;
+    color: #555555;
+}
+
+.input {
+    padding: 10px;
+    border: 1px solid #cccccc;
+    border-radius: 0;
+    /* Строгий стиль */
+    font-size: 16px;
+    outline: none;
+}
+
+.input:focus {
+    border-color: #000000;
+}
+
+.submitButton {
+    background-color: #000000;
+    color: #ffffff;
+    padding: 15px;
+    border: none;
+    font-weight: 700;
+    text-transform: uppercase;
+    cursor: pointer;
+    transition: background 0.3s ease;
+    margin-top: 10px;
+}
+
+.submitButton:hover {
+    background-color: #333333;
+}
+
+.successMessage {
+    color: green;
+    text-align: center;
+    margin-top: 15px;
+    font-size: 14px;
+}

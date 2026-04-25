@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
+import styles from "./Register.module.css"
 
 const Register = () => {
   // 1. STATE: This is the "memory" of your component.
@@ -62,27 +63,27 @@ const Register = () => {
 
   // 7. THE UI: Plain HTML structure without styles.
   return (
-    <div>
-      <h2>Register</h2>
+    <div className={styles.container}>
+      <h2 className={styles.title}>Register</h2>
       
       <form onSubmit={handleSubmit}>
-        <div>
-          <label>First Name:</label>
-          <input type="text" name="firstName" required onChange={handleChange} />
+        <div className={styles.formGroup}>
+          <label className={styles.label}>First Name:</label>
+          <input type="text" name="firstName" required onChange={handleChange} className={styles.input}/>
         </div>
 
         <div>
-          <label>Last Name:</label>
-          <input type="text" name="lastName" onChange={handleChange} />
+          <label className={styles.label}>Last Name:</label>
+          <input type="text" name="lastName" onChange={handleChange} className={styles.input}/>
         </div>
 
         <div>
-          <label>Email:</label>
-          <input type="email" name="email" required onChange={handleChange} />
+          <label className={styles.label}>Email:</label>
+          <input type="email" name="email" required onChange={handleChange} className={styles.input}/>
         </div>
 
         <div>
-          <label>Gender:</label>
+          <label className={styles.label}>Gender:</label>
           <select name="gender" onChange={handleChange}>
             <option value="unspecified">Unspecified</option>
             <option value="male">Male</option>
@@ -92,12 +93,12 @@ const Register = () => {
         </div>
 
         <div>
-          <label>Birth Date:</label>
-          <input type="date" name="birthDate" onChange={handleChange} />
+          <label className={styles.label}>Birth Date:</label>
+          <input type="date" name="birthDate" onChange={handleChange} className={styles.input}/>
         </div>
 
         <div>
-          <label>Favorite Cafe (Branch):</label>
+          <label className={styles.label}>Favorite Cafe (Branch):</label>
           <select name="homeBranchId" required onChange={handleChange}>
             <option value="">Select a branch</option>
             {branches.map((branch) => (
@@ -108,11 +109,11 @@ const Register = () => {
           </select>
         </div>
 
-        <button type="submit">Register</button>
+        <button type="submit" className={styles.submitButton}>Register</button>
       </form>
 
       {/* Show message if it exists */}
-      {message && <p>{message}</p>}
+      {message && <p className={styles.successMessage}>{message}</p>}
     </div>
   );
 };
