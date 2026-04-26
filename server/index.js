@@ -195,7 +195,7 @@ app.get('/api/wallet/google/:email', async (req, res) => {
       id: `${ISSUER_ID}.${user.qr_code_token}`,
       classId: `${ISSUER_ID}.${CLASS_ID}`,
       state: 'ACTIVE',
-      accountHolderName: `${user.firstName} ${user.lastName}`,
+      accountHolderName: `${user.first_name} ${user.last_name}`,
       accountId: user.qr_code_token,
       barcode: {
         type: 'QR_CODE',
@@ -213,7 +213,7 @@ app.get('/api/wallet/google/:email', async (req, res) => {
       typ: 'savetowallet',
       origins: [
         'http://localhost:5173',
-        'https://miners-loyalty-frontend.onrender.com'
+        'https://miners-loyalty-system-1.onrender.com'
       ],
       payload: {
         loyaltyObjects: [loyaltyObject]
