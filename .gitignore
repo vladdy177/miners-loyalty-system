@@ -10,3 +10,7 @@ dist/
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
+
+# Google wallet key
+google-key.json
+wallet_issuer_ID.txt

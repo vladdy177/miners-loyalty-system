@@ -1,6 +1,13 @@
 const express = require("express");
 const cors = require("cors");
 const db = require("./config/db");
+
+const jwt = require('jsonwebtoken');
+const googleKey = require('./google-key.json');
+
+const ISSUER_ID = '3388000000023127113';
+const CLASS_ID = 'TheMinersLoyalty';
+
 require("dotenv").config();
 
 // 1. Initialize the app (THIS MUST COME FIRST)
@@ -150,5 +157,63 @@ app.get('/api/branches', async (req, res) => {
   } catch (err) {
     console.error("Database error:", err.message);
     res.status(500).json({ error: "Internal Server Error" });
+  }
+});
+
+// --- GOOGLE WALLET ---
+app.get('/api/wallet/google/:email', async (req, res) => {
+  try {
+    const {email} = req.params;
+    
+    //User data and his QR-token from DB
+    const query = `
+      SELECT u.first_name, u.last_name, lc.qr_code_token
+      FROM users u
+      JOIN loyalty_cards lc ON u.id = lc.user_id
+      WHERE u.email = $1
+    `;
+
+    const userRes = await db.query(query, [email]);
+
+    if (userRes.rows.length === 0) return res.status(404).send('user not found');
+    const user = userRes.rows[0];
+
+    const loyaltyObject = {
+      id: `${ISSUER_ID}.${user.qr_code_token}`,
+      classId: `${ISSUER_ID}.${CLASS_ID}`,
+      state: 'ACTIVE',
+      accountHolderName: `${user.firstName} ${user.lastName}`,
+      accountId: user.qr_code_token,
+      barcode: {
+        type: 'QR_CODE',
+        value: user.qr_code_token
+      },
+      loyaltyPoints: {
+        label: 'Points',
+        balance: { string: '0'}
+      }
+    };
+
+    const claims = {
+      iss: googleKey.client_email,
+      aud: 'google',
+      typ: 'savetowallet',
+      origins: [
+        'http://localhost:5173',
+        'https://miners-loyalty-frontend.onrender.com'
+      ],
+      payload: {
+        loyaltyObjects: [loyaltyObject]
+      }
+    };
+
+    const token = jwt.sign(claims, googleKey.private_key, { algorithm: 'RS256'});
+
+    const saveUrl = `https://pay.google.com/gp/v/save/${token}`;
+
+    res.json({saveUrl});
+  } catch (err) {
+    console.error("Wallet Error: ", err);
+    res.status(500).send('Error generating Google Wallet link');
   }
 });

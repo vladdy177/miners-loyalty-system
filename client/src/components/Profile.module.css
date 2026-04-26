@@ -1,0 +1,68 @@
+.container {
+    max-width: 400px;
+    margin: 20px auto;
+    padding: 20px;
+    font-family: 'TheMinersFont', sans-serif;
+}
+
+.card {
+    background-color: #000000;
+    color: #ffffff;
+    border-radius: 15px;
+    padding: 30px;
+    text-align: center;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+}
+
+.title {
+    font-size: 12px;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    color: #888888;
+    margin-bottom: 20px;
+}
+
+.userName {
+    font-size: 28px;
+    font-weight: 200;
+    margin-bottom: 5px;
+}
+
+.branchName {
+    font-size: 14px;
+    color: #aaaaaa;
+    margin-bottom: 30px;
+}
+
+.qrContainer {
+    background-color: #ffffff;
+    padding: 15px;
+    display: inline-block;
+    border-radius: 10px;
+    margin-bottom: 30px;
+}
+
+.statsGrid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    border-top: 1px solid #333333;
+    padding-top: 20px;
+    text-align: left;
+}
+
+.statLabel {
+    font-size: 10px;
+    text-transform: uppercase;
+    color: #666666;
+}
+
+.statValue {
+    font-size: 20px;
+    font-weight: 400;
+}
+
+.points {
+    color: #FFD700;
+    /* Золотой акцент для баллов */
+}

@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import axios from "axios";
 import styles from "./Register.module.css";
 
-const Register = () => {
+const Register = ({onRegistrationSuccess}) => {
   const [formData, setFormData] = useState({
     email: "",
     firstName: "",
@@ -87,7 +87,15 @@ const Register = () => {
       };
 
       await axios.post(`${apiUrl}/api/register`, dataToSend);
-      setMessage("Registration successful!");
+      // Внутри handleSubmit, после await axios.post(...)
+      console.log("Регистрация успешна, пытаюсь вызвать onRegistrationSuccess...");
+
+      if (onRegistrationSuccess) {
+        onRegistrationSuccess(formData.email);
+        console.log("Функция вызвана с email:", formData.email);
+      } else {
+        console.log("ОШИБКА: Пропс onRegistrationSuccess не найден!");
+      }
     } catch (err) {
       setMessage(err.response?.data?.error || "Registration failed");
     }
