@@ -1,6 +1,6 @@
 @font-face {
     font-family: 'TheMinersFont';
-    src: url('.assets\fonts\NHaasGroteskDSPro-regular.woff2') format('opentype');
+    src: url('./assets/fonts/NeueHaasDisplayMediu.ttf') format('truetype');
     font-weight: normal;
     font-style: normal;
     font-display: swap;
@@ -8,25 +8,25 @@
 
 @font-face {
     font-family: 'TheMinersFont';
-    src: url('.assets\fonts\NHaasGroteskDSPro-medium.woff2') format('opentype');
-    font-weight: medium;
+    src: url('./assets/fonts/NeueHaasDisplayLight.ttf') format('truetype');
+    font-weight: 200;
     font-style: normal;
     font-display: swap;
 }
 
 @font-face {
     font-family: 'TheMinersFont';
-    src: url('.assets\fonts\NHaasGroteskDSPro-italic.woff2') format('opentype');
-    font-weight: normal;
-    font-style: italic;
+    src: url('./assets/fonts/NeueHaasDisplayBold.ttf') format('truetype');
+    font-weight: 400;
+    font-style: normal;
     font-display: swap;
 }
 
 @font-face {
     font-family: 'TheMinersFont';
-    src: url('.assets\fonts\NHaasGroteskDSPro-italic-medium.woff2') format('opentype');
-    font-weight: medium;
-    font-style: italic;
+    src: url('./assets/fonts/Dimensions500.ttf') format('truetype');
+    font-weight: 500;
+    font-style: normal;
     font-display: swap;
 }
 
@@ -39,4 +39,18 @@ body {
     font-family: 'TheMinersFont', sans-serif;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
+}
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+input,
+button,
+select,
+textarea {
+    font-family: inherit;
+    font-size: inherit;
 }

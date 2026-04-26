@@ -133,9 +133,22 @@ app.get('/api/user/:email', async (req, res) => {
 // --- GET ALL BRANCHES ---
 app.get('/api/branches', async (req, res) => {
   try {
-    const result = await db.query('SELECT id, name FROM branches WHERE is_active = true');
+    // We must use JOIN to get data from the 'regions' table
+    const query = `
+      SELECT 
+        branches.id, 
+        branches.name, 
+        regions.name as city, 
+        regions.country 
+      FROM branches
+      JOIN regions ON branches.region_id = regions.id
+      WHERE branches.is_active = true
+    `;
+
+    const result = await db.query(query);
     res.json(result.rows);
   } catch (err) {
-    res.status(500).send("Server Error fetching branches");
+    console.error("Database error:", err.message);
+    res.status(500).json({ error: "Internal Server Error" });
   }
 });

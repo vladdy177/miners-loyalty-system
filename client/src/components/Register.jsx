@@ -1,90 +1,114 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
-import styles from "./Register.module.css"
+import styles from "./Register.module.css";
 
 const Register = () => {
-  // 1. STATE: This is the "memory" of your component.
-  // We store the values the user types here.
   const [formData, setFormData] = useState({
     email: "",
     firstName: "",
     lastName: "",
     gender: "unspecified",
-    birthDate: "",
+    birthDay: "",
+    birthMonth: "",
+    birthYear: "",
     homeBranchId: "",
   });
 
-  // 2. STATE: This stores the list of cafes fetched from the database.
-  const [branches, setBranches] = useState([]);
-  
-  // 3. STATE: This stores the success or error message to show the user.
+  const [allBranches, setAllBranches] = useState([]);
+  const [selectedCountry, setSelectedCountry] = useState("");
+  const [selectedCity, setSelectedCity] = useState("");
   const [message, setMessage] = useState("");
 
-  // 4. USEEFFECT: This code runs only ONCE when the page first loads.
-  // It asks the Backend for the list of coffee shops (Letná, etc.).
   useEffect(() => {
     const fetchBranches = async () => {
       try {
         const apiUrl = import.meta.env.VITE_API_URL;
         const res = await axios.get(`${apiUrl}/api/branches`);
-        setBranches(res.data); // Put the list into the "branches" state
+        setAllBranches(res.data);
       } catch (err) {
-        console.error("Error fetching branches from DB", err);
+        console.error("Error fetching branches", err);
       }
     };
     fetchBranches();
   }, []);
 
-  // 5. EVENT HANDLER: This runs every time the user types a letter.
-  // It updates the "formData" memory.
+  // Standard handler for text inputs
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setFormData({ 
-        ...formData, // Keep all existing data
-        [name]: value // Update only the field that changed (e.g., email)
-    });
+    setFormData({ ...formData, [name]: value });
   };
 
-  // 6. SUBMIT HANDLER: This runs when the user clicks the button.
+  // 1. SPECIFIC HANDLER FOR DATE: Limits the character length
+  const handleDateChange = (e) => {
+    const { name, value } = e.target;
+
+    if (value !== "" && !/^\d+$/.test(value)) return;
+
+    if (name === "birthDay") {
+      if (value.length <= 2) {
+        if (value === "" || (Number(value) <= 31)) {
+          setFormData({ ...formData, [name]: value });
+        }
+      }
+    }
+
+    else if (name === "birthMonth") {
+      if (value.length <= 2) {
+        if (value === "" || (Number(value) <= 12)) {
+          setFormData({ ...formData, [name]: value });
+        }
+      }
+    }
+
+    else if (name === "birthYear") {
+      if (value.length <= 4) {
+        if (value === "" || (Number(value) <= new Date().getFullYear())) {
+          setFormData({ ...formData, [name]: value });
+        }
+      }
+    }
+  };
+
   const handleSubmit = async (e) => {
-    e.preventDefault(); // Prevents the browser from refreshing the page
+    e.preventDefault();
     try {
       const apiUrl = import.meta.env.VITE_API_URL;
-      
-      // We only care that the request completes successfully.
-      await axios.post(`${apiUrl}/api/register`, formData);
-      
+
+      // Ensure single digits become double digits (e.g., "5" -> "05")
+      const dd = formData.birthDay.padStart(2, '0');
+      const mm = formData.birthMonth.padStart(2, '0');
+      const yyyy = formData.birthYear;
+
+      const formattedDate = `${yyyy}-${mm}-${dd}`;
+
+      const dataToSend = {
+        ...formData,
+        birthDate: formattedDate
+      };
+
+      await axios.post(`${apiUrl}/api/register`, dataToSend);
       setMessage("Registration successful!");
     } catch (err) {
-      // If the server returns an error (like 400 or 500), this code runs.
       setMessage(err.response?.data?.error || "Registration failed");
     }
   };
 
-  // 7. THE UI: Plain HTML structure without styles.
+  const countries = [...new Set(allBranches.map((b) => b.country))].filter(Boolean);
+  const cities = [...new Set(allBranches.filter((b) => b.country === selectedCountry).map((b) => b.city))].filter(Boolean);
+  const filteredBranches = allBranches.filter((b) => b.city === selectedCity);
+
   return (
     <div className={styles.container}>
-      <h2 className={styles.title}>Register</h2>
-      
-      <form onSubmit={handleSubmit}>
-        <div className={styles.formGroup}>
-          <label className={styles.label}>First Name:</label>
-          <input type="text" name="firstName" required onChange={handleChange} className={styles.input}/>
-        </div>
+      <h2 className={styles.title}>Registration form</h2>
 
-        <div>
-          <label className={styles.label}>Last Name:</label>
-          <input type="text" name="lastName" onChange={handleChange} className={styles.input}/>
-        </div>
+      <form onSubmit={handleSubmit} className={styles.formGroup}>
+        <input placeholder="First Name" name="firstName" required onChange={handleChange} className={styles.input} />
+        <input placeholder="Last Name" name="lastName" onChange={handleChange} className={styles.input} />
+        <input placeholder="Email" type="email" name="email" required onChange={handleChange} className={styles.input} />
 
-        <div>
-          <label className={styles.label}>Email:</label>
-          <input type="email" name="email" required onChange={handleChange} className={styles.input}/>
-        </div>
-
-        <div>
-          <label className={styles.label}>Gender:</label>
-          <select name="gender" onChange={handleChange}>
+        <div className={styles.form_data}>
+          <p className={styles.label}>Gender:</p>
+          <select name="gender" value={formData.gender} onChange={handleChange} className={styles.input}>
             <option value="unspecified">Unspecified</option>
             <option value="male">Male</option>
             <option value="female">Female</option>
@@ -92,27 +116,65 @@ const Register = () => {
           </select>
         </div>
 
-        <div>
+        {/* 2. BIRTH DATE with inputMode and length limits */}
+        <div className={styles.form_data}>
           <label className={styles.label}>Birth Date:</label>
-          <input type="date" name="birthDate" onChange={handleChange} className={styles.input}/>
+          <div className={styles.dateRow}>
+            <input
+              type="text"
+              inputMode="numeric"
+              name="birthDay"
+              placeholder="DD"
+              value={formData.birthDay}
+              onChange={handleDateChange}
+              className={`${styles.inputDate} ${styles.inputSmall}`}
+            />
+            <input
+              type="text"
+              inputMode="numeric"
+              name="birthMonth"
+              placeholder="MM"
+              value={formData.birthMonth}
+              onChange={handleDateChange}
+              className={`${styles.inputDate} ${styles.inputSmall}`}
+            />
+            <input
+              type="text"
+              inputMode="numeric"
+              name="birthYear"
+              placeholder="YYYY"
+              value={formData.birthYear}
+              onChange={handleDateChange}
+              className={`${styles.inputDate} ${styles.inputMedium}`}
+            />
+          </div>
         </div>
 
-        <div>
-          <label className={styles.label}>Favorite Cafe (Branch):</label>
-          <select name="homeBranchId" required onChange={handleChange}>
-            <option value="">Select a branch</option>
-            {branches.map((branch) => (
-              <option key={branch.id} value={branch.id}>
-                {branch.name}
-              </option>
-            ))}
+        <div className={styles.form_data}>
+          <p className={styles.label}>Branch location</p>
+          <select value={selectedCountry} onChange={(e) => { setSelectedCountry(e.target.value); setSelectedCity(""); }} className={styles.input}>
+            <option value="">-- Country --</option>
+            {countries.map(c => <option key={c} value={c}>{c}</option>)}
           </select>
         </div>
 
-        <button type="submit" className={styles.submitButton}>Register</button>
+        <div className={styles.form_data}>
+          <select disabled={!selectedCountry} value={selectedCity} onChange={(e) => setSelectedCity(e.target.value)} className={styles.input}>
+            <option value="">-- City --</option>
+            {cities.map(c => <option key={c} value={c}>{c}</option>)}
+          </select>
+        </div>
+
+        <div className={styles.form_data}>
+          <select name="homeBranchId" disabled={!selectedCity} required onChange={handleChange} className={styles.input}>
+            <option value="">-- Location --</option>
+            {filteredBranches.map(b => <option key={b.id} value={b.id}>{b.name}</option>)}
+          </select>
+        </div>
+
+        <button type="submit" className={styles.submitButton}>Finish Registration</button>
       </form>
 
-      {/* Show message if it exists */}
       {message && <p className={styles.successMessage}>{message}</p>}
     </div>
   );

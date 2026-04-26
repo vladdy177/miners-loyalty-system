@@ -1,23 +1,24 @@
 /* Register.module.css */
+body{
+    background-color: #1a1a1a;
+}
 
 .container {
     max-width: 400px;
     margin: 40px auto;
     padding: 30px;
     background-color: #ffffff;
-    border: 1px solid #eeeeee;
+    border: 1px solid #313131;
     border-radius: 4px;
-    font-family: 'TheMinersFont', sans-serif;
-    font-weight: medium;
+
 }
 
 .title {
-    font-size: 24px;
-    font-weight: 700;
+    font-size: 2em;
     text-transform: uppercase;
-    letter-spacing: 1px;
     margin-bottom: 25px;
     text-align: center;
+    font-weight: 400;
 }
 
 .formGroup {
@@ -26,21 +27,52 @@
     margin-bottom: 15px;
 }
 
+.form_data {
+    display: flex;
+    flex-direction: column;
+}
+
 .label {
-    font-size: 12px;
-    font-weight: 600;
+    font-size: 1em;
     text-transform: uppercase;
     margin-bottom: 5px;
-    color: #555555;
 }
 
 .input {
     padding: 10px;
     border: 1px solid #cccccc;
     border-radius: 0;
-    /* Строгий стиль */
-    font-size: 16px;
+    font-size: 10pt;
     outline: none;
+    margin-bottom: 10px;
+}
+
+/* Контейнер для трех полей даты */
+.dateRow {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 30px;
+}
+
+.inputDate {
+    padding: 10px;
+    border: 1px solid #cccccc;
+    border-radius: 0;
+    text-align: center;
+    outline: none;
+}
+
+.inputDate:focus {
+    border-color: #000000;
+}
+
+.inputSmall {
+    width: 90px;
+}
+
+.inputMedium {
+    width: 130px;
 }
 
 .input:focus {
@@ -52,7 +84,6 @@
     color: #ffffff;
     padding: 15px;
     border: none;
-    font-weight: 700;
     text-transform: uppercase;
     cursor: pointer;
     transition: background 0.3s ease;
