@@ -3,7 +3,20 @@ const cors = require("cors");
 const db = require("./config/db");
 
 const jwt = require('jsonwebtoken');
-const googleKey = require('./google-key.json');
+
+let googleKey;
+if (googleKey && googleKey.private_key) {
+  googleKey.private_key = googleKey.private_key.replace(/\\n/g, '\n');
+}
+if (process.env.GOOGLE_SERVICE_ACCOUNT_JSON) {
+  googleKey = JSON.parse(process.env.GOOGLE_SERVICE_ACCOUNT_JSON);
+} else {
+  try {
+    googleKey = require('./google-key.json');
+  } catch (e) {
+    console.error("Warning: Google Wallet keys not found");
+  }
+}
 
 const ISSUER_ID = '3388000000023127113';
 const CLASS_ID = 'TheMinersLoyalty';
