@@ -1,3 +1,5 @@
+const { generateGoogleWalletLink } = require('./walletService');
+
 const express = require("express");
 const cors = require("cors");
 const db = require("./config/db");
@@ -89,7 +91,7 @@ app.post("/api/register", async (req, res) => {
       VALUES ($1, $2, $3, $4)
       RETURNING *
     `;
-    const cardValues = [userId, 0, qrToken, "Standard"];
+    const cardValues = [userId, 0, qrToken, "STANDARD"];
     const cardResult = await db.query(cardQuery, cardValues);
 
     await db.query("COMMIT"); // Success!
@@ -153,7 +155,6 @@ app.get('/api/user/:email', async (req, res) => {
 // --- GET ALL BRANCHES ---
 app.get('/api/branches', async (req, res) => {
   try {
-    // We must use JOIN to get data from the 'regions' table
     const query = `
       SELECT 
         branches.id, 
@@ -176,57 +177,25 @@ app.get('/api/branches', async (req, res) => {
 // --- GOOGLE WALLET ---
 app.get('/api/wallet/google/:email', async (req, res) => {
   try {
-    const {email} = req.params;
-    
-    //User data and his QR-token from DB
+    const { email } = req.params;
+
     const query = `
-      SELECT u.first_name, u.last_name, lc.qr_code_token
+      SELECT u.first_name, u.last_name, lc.qr_code_token, lc.points_balance, lc.tier
       FROM users u
       JOIN loyalty_cards lc ON u.id = lc.user_id
       WHERE u.email = $1
     `;
-
     const userRes = await db.query(query, [email]);
 
-    if (userRes.rows.length === 0) return res.status(404).send('user not found');
+    if (userRes.rows.length === 0) return res.status(404).send('User not found');
     const user = userRes.rows[0];
 
-    const loyaltyObject = {
-      id: `${ISSUER_ID}.${user.qr_code_token}`,
-      classId: `${ISSUER_ID}.${CLASS_ID}`,
-      state: 'ACTIVE',
-      accountHolderName: `${user.first_name} ${user.last_name}`,
-      accountId: user.qr_code_token,
-      barcode: {
-        type: 'QR_CODE',
-        value: user.qr_code_token
-      },
-      loyaltyPoints: {
-        label: 'Points',
-        balance: { string: '0'}
-      }
-    };
-
-    const claims = {
-      iss: googleKey.client_email,
-      aud: 'google',
-      typ: 'savetowallet',
-      origins: [
-        'http://localhost:5173',
-        'https://miners-loyalty-system-1.onrender.com'
-      ],
-      payload: {
-        loyaltyObjects: [loyaltyObject]
-      }
-    };
-
-    const token = jwt.sign(claims, googleKey.private_key, { algorithm: 'RS256'});
-
+    const token = generateGoogleWalletLink(user, googleKey, ISSUER_ID, CLASS_ID);
     const saveUrl = `https://pay.google.com/gp/v/save/${token}`;
 
-    res.json({saveUrl});
+    res.json({ saveUrl });
   } catch (err) {
-    console.error("Wallet Error: ", err);
+    console.error("Wallet Error:", err);
     res.status(500).send('Error generating Google Wallet link');
   }
 });
