@@ -1,0 +1,84 @@
+.adminWrapper {
+    display: flex;
+    min-height: 100vh;
+    background-color: #f4f4f4;
+    font-family: 'TheMinersFont', sans-serif;
+}
+
+.sidebar {
+    width: 250px;
+    background-color: #000;
+    /* Black like the brand */
+    color: white;
+    display: flex;
+    flex-direction: column;
+    padding: 30px 15px;
+    position: fixed;
+    /* Keep it fixed on the left */
+    height: 100vh;
+}
+
+.brand {
+    font-size: 3.5rem;
+    font-weight: 900;
+    margin-bottom: 20px;
+    padding-left: 10px;
+}
+
+.brand span {
+    color: #ef1ab6;
+    /* Yellow highlight */
+}
+
+.nav {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    flex-grow: 1;
+}
+
+.navItem,
+.navItemActive {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 15px;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    font-weight: 200;
+    text-align: left;
+    transition: 0.2s;
+    background: transparent;
+    color: #888;
+}
+
+.navItem:hover {
+    color: #fff;
+    background-color: #222;
+}
+
+.navItemActive {
+    background-color: #FFEA00;
+    color: #000;
+}
+
+.exitBtn {
+    background: none;
+    border: 1px solid #444;
+    color: #ff4444;
+    padding: 10px;
+    border-radius: 6px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+}
+
+.mainContent {
+    flex-grow: 1;
+    margin-left: 250px;
+    /* Leave space for the sidebar */
+    padding: 40px;
+}

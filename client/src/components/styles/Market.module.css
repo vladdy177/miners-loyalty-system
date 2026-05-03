@@ -1,0 +1,115 @@
+.marketContainer {
+    padding: 10px;
+    font-family: 'TheMinersFont', sans-serif;
+    color: white;
+}
+
+.header {
+    margin-bottom: 30px;
+    text-align: left;
+}
+
+.title {
+    font-size: 32px;
+    font-weight: 400;
+    margin: 0;
+    letter-spacing: -1px;
+}
+
+.subtitle {
+    font-size: 18px;
+    color: #888;
+    margin: 0;
+}
+
+.itemsList {
+    display: flex;
+    flex-direction: column;
+    gap: 25px;
+}
+
+.rewardCard {
+    background-color: #FFEA00;
+    /* Standard Yellow */
+    border-radius: 4px;
+    overflow: hidden;
+    color: black;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+}
+
+/* Make Tier Upgrades look different (Orange like in your photo) */
+.rewardCard:nth-child(even) {
+    background-color: #FF9100;
+}
+
+.progressHeader {
+    padding: 15px 15px 5px 15px;
+    background-color: rgba(0, 0, 0, 0.05);
+}
+
+.progressInfo {
+    font-size: 14px;
+    font-weight: 200;
+    margin-bottom: 8px;
+}
+
+.progressBar {
+    height: 8px;
+    background-color: rgba(0, 0, 0, 0.1);
+    width: 100%;
+}
+
+.progressFill {
+    height: 100%;
+    background-color: black;
+    transition: width 1s ease-out;
+}
+
+.cardContent {
+    padding: 20px 15px;
+    display: flex;
+    flex-direction: column;
+}
+
+.rewardTitle {
+    font-size: 36px;
+    margin: 0;
+    font-weight: 200;
+    text-transform: uppercase;
+}
+
+.rewardDesc {
+    font-size: 1rem;
+    margin: 8px 0 20px 0;
+    line-height: 1.4;
+    font-weight: 200;
+    opacity: 0.8;
+}
+
+.buyBtn {
+    align-self: flex-end;
+    background-color: #00B0FF;
+    /* Bright blue button */
+    color: black;
+    border: none;
+    padding: 10px 25px;
+    cursor: pointer;
+    text-transform: uppercase;
+    border-radius: 2px;
+}
+
+.lockedBtn {
+    align-self: flex-end;
+    background-color: rgba(0, 0, 0, 0.2);
+    color: rgba(0, 0, 0, 0.4);
+    border: none;
+    padding: 10px 25px;
+    text-transform: uppercase;
+    cursor: not-allowed;
+}
+
+.statusText {
+    text-align: center;
+    color: #888;
+    margin-top: 50px;
+}

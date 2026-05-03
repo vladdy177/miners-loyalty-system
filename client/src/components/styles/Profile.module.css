@@ -66,3 +66,35 @@
     color: #FFD700;
     /* Золотой акцент для баллов */
 }
+
+.profilePage {
+    max-width: 450px;
+    margin: 0 auto;
+    padding-bottom: 50px;
+}
+
+.tabs {
+    display: flex;
+    justify-content: center;
+    gap: 20px;
+    margin-bottom: 20px;
+}
+
+.tab,
+.activeTab {
+    background: none;
+    border: none;
+    color: white;
+    cursor: pointer;
+    padding: 10px;
+    border-bottom: 2px solid transparent;
+}
+
+.activeTab {
+    border-bottom: 2px solid #FFD700;
+}
+
+.walletButtonContainer {
+    text-align: center;
+    margin-top: 20px;
+}

@@ -1,6 +1,10 @@
 import React, { useState } from "react";
 import Register from "./components/Register";
 import Profile from "./components/Profile";
+import Admin from "./components/admin/AdminLayout";
+import AdminLayout from "./components/admin/AdminLayout";
+import { LogOut } from "lucide-react";
+
 
 function App() {
   const [userEmail, setUserEmail] = useState(() => {
@@ -21,23 +25,37 @@ function App() {
     setUserEmail(null);
   };
 
+  const isAdmin = new URLSearchParams(window.location.search).get("admin") === "true";
+
+  if (isAdmin) return <AdminLayout />;
+
   if (userEmail) {
     return (
-      <div>
+      <div style={{
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'center',
+        justifyContent: 'center'
+      }}>
         <Profile email={userEmail} />
         <button
           onClick={handleLogout}
           style={{
-            color: 'white',
-            display: 'block',
-            margin: '20px auto',
+            width: '200px',
             background: 'none',
-            border: 'none',
-            textDecoration: 'underline',
-            cursor: 'pointer'
+            border:' 1px solid #444',
+            color:' #ff4444',
+            padding: '10px',
+            borderRadius: '6px',
+            cursor: 'pointer',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            gap: '10px'
           }}
         >
-          Log out
+          <LogOut size={18} />
+          Log Out
         </button>
       </div>
     );

@@ -1,13 +1,5 @@
 @font-face {
     font-family: 'TheMinersFont';
-    src: url('./assets/fonts/NeueHaasDisplayMediu.ttf') format('truetype');
-    font-weight: 300;
-    font-style: normal;
-    font-display: swap;
-}
-
-@font-face {
-    font-family: 'TheMinersFont';
     src: url('./assets/fonts/NeueHaasDisplayLight.ttf') format('truetype');
     font-weight: 200;
     font-style: normal;
@@ -16,8 +8,17 @@
 
 @font-face {
     font-family: 'TheMinersFont';
-    src: url('./assets/fonts/NeueHaasDisplayBold.ttf') format('truetype');
+    src: url('./assets/fonts/NeueHaasDisplayMediu.ttf') format('truetype');
     font-weight: 400;
+    font-style: normal;
+    font-display: swap;
+}
+
+
+@font-face {
+    font-family: 'TheMinersFont';
+    src: url('./assets/fonts/NeueHaasDisplayBold.ttf') format('truetype');
+    font-weight: 700;
     font-style: normal;
     font-display: swap;
 }
@@ -25,7 +26,7 @@
 @font-face {
     font-family: 'TheMinersFont';
     src: url('./assets/fonts/Dimensions500.ttf') format('truetype');
-    font-weight: 800;
+    font-weight: 900;
     font-style: normal;
     font-display: swap;
 }

@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
-import styles from "./Register.module.css";
+import styles from "./styles/Register.module.css";
 
 const Register = ({onRegistrationSuccess}) => {
   const [formData, setFormData] = useState({
@@ -86,8 +86,7 @@ const Register = ({onRegistrationSuccess}) => {
         birthDate: formattedDate
       };
 
-      await axios.post(`${apiUrl}/api/register`, dataToSend);
-      // Внутри handleSubmit, после await axios.post(...)
+      await axios.post(`${apiUrl}/api/users/register`, dataToSend);
       console.log("Регистрация успешна, пытаюсь вызвать onRegistrationSuccess...");
 
       if (onRegistrationSuccess) {
