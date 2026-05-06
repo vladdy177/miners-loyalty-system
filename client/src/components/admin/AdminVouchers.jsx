@@ -40,7 +40,7 @@ const AdminVouchers = () => {
             resetForm();
             setRefreshTrigger(prev => prev + 1);
         } catch (err) {
-            alert("Failed to save reward item.");
+            alert("Failed to save reward item.", err);
         }
     };
 
@@ -51,7 +51,7 @@ const AdminVouchers = () => {
             await axios.delete(`${apiUrl}/api/admin/vouchers/${id}`);
             setRefreshTrigger(prev => prev + 1);
         } catch (err) {
-            alert("Error: This item might be linked to users and cannot be deleted.");
+            alert("Error: This item might be linked to users and cannot be deleted.", err);
         }
     };
 

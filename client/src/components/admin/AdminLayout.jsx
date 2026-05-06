@@ -7,7 +7,7 @@ import AdminUsers from "./AdminUsers.jsx";
 import AdminVouchers from "./AdminVouchers.jsx";
 import Stats from "./Stats.jsx";
 
-const AdminLayout = () => {
+const AdminLayout = ({ onLogout }) => {
     const [activeTab, setActiveTab] = useState("dashboard");
 
     const renderContent = () => {
@@ -38,7 +38,7 @@ const AdminLayout = () => {
                         <BarChart3 size={20} /> Statistics
                     </button>
                 </nav>
-                <button className={styles.exitBtn} onClick={() => window.location.href = "/"}>
+                <button className={styles.exitBtn} onClick={onLogout}>
                     <LogOut size={18} /> Exit Admin
                 </button>
             </aside>

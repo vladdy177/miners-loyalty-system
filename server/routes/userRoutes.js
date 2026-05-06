@@ -52,6 +52,24 @@ router.get('/profile/:email', async (req, res) => {
     }
 });
 
+// GET /api/users/my-vouchers/:email
+router.get('/my-vouchers/:email', async (req, res) => {
+    try {
+        const query = `
+            SELECT uv.id, vt.title, vt.description, uv.expires_at, uv.status
+            FROM user_vouchers uv
+            JOIN voucher_templates vt ON uv.template_id = vt.id
+            JOIN users u ON uv.user_id = u.id
+            WHERE u.email = $1 AND uv.status = 'active'
+            ORDER BY uv.expires_at ASC
+        `;
+        const result = await db.query(query, [req.params.email]);
+        res.json(result.rows);
+    } catch (err) {
+        res.status(500).send("Error fetching vouchers");
+    }
+});
+
 // User Wallet (GET /api/users/wallet/google/:email)
 router.get('/wallet/google/:email', async (req, res) => {
     try {

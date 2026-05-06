@@ -98,3 +98,44 @@
     text-align: center;
     margin-top: 20px;
 }
+
+.inventorySection {
+    margin-top: 30px;
+    padding: 0 20px;
+}
+
+.inventoryTitle {
+    font-weight: 900;
+    font-size: 14px;
+    color: #888;
+    letter-spacing: 1px;
+    margin-bottom: 15px;
+}
+
+.miniVoucher {
+    background-color: #222;
+    border-radius: 8px;
+    padding: 15px;
+    cursor: pointer;
+    border-left: 4px solid #FFEA00;
+    margin-bottom: 10px;
+}
+
+.vLabel {
+    font-size: 9px;
+    font-weight: 900;
+    color: #FFEA00;
+}
+
+.vTitle {
+    font-weight: 700;
+    font-size: 16px;
+    color: white;
+    margin: 3px 0;
+}
+
+.vTap {
+    font-size: 10px;
+    color: #666;
+    font-weight: bold;
+}
