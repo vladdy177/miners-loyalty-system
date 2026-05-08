@@ -36,10 +36,8 @@ const buildGenericObject = (user, activeVouchers = []) => {
 
     const fullName = [user.first_name, user.last_name]
         .filter(Boolean)
-        .map(s => s.toUpperCase())
+        .map(s => s)
         .join(' ') || 'MEMBER';
-
-    const branchDisplay = user.home_branch ? `The Miners ${user.home_branch}` : "The Miners Coffee Club";
 
     return {
         id: `${ISSUER_ID}.${user.qr_code_token}`,
@@ -49,7 +47,7 @@ const buildGenericObject = (user, activeVouchers = []) => {
             contentDescription: { defaultValue: { language: 'en-US', value: "The Miners Logo" } }
         },
         cardTitle: { defaultValue: { language: 'en-US', value: "The Miners Coffee Club" } },
-        subheader: { defaultValue: { language: "en-US", value: branchDisplay } },
+        subheader: { defaultValue: { language: "en-US", value: user.home_branch } },
         header: { defaultValue: { language: "en-US", value: fullName } },
 
         // Все блоки данных объединяем в ОДИН массив textModulesData
@@ -65,14 +63,14 @@ const buildGenericObject = (user, activeVouchers = []) => {
                 body: String(user.points_balance)
             },
             {
-                id: "vouchers",
-                header: "My vouchers",
-                body: voucherList
+                id: "benefits",
+                header: "Benefits",
+                body: tier.benefits
             },
             {
                 id: "progress",
                 header: "Next goal",
-                body: tier.nextTierText.toUpperCase()
+                body: tier.nextTierText
             }
         ],
         barcode: {
