@@ -45,7 +45,9 @@ const buildLoyaltyObject = (user, activeVouchers = []) => {
         ? activeVouchers.map(v => `- ${v.title}`).join('\n')
         : "No active vouchers";
 
-    const fullName = `${(user.first_name || 'GUEST').toUpperCase()} ${(user.last_name || '').toUpperCase()}`;
+    const firstName = user.first_name || 'MEMBER';
+    const lastName = user.last_name || '';
+    const fullName = `${firstName} ${lastName}`.toUpperCase();
 
     return {
         id: `${ISSUER_ID}.${user.qr_code_token}`,
@@ -109,4 +111,31 @@ const syncWallet = async (user, activeVouchers) => {
     }
 };
 
-module.exports = { generateGoogleWalletLink, syncWallet };
+const triggerFullSync = async (db, email) => {
+    try {
+        // Fresh user data
+        const userRes = await db.query(`
+            SELECT u.email, u.first_name, u.last_name, lc.points_balance, lc.tier, lc.qr_code_token 
+            FROM users u 
+            JOIN loyalty_cards lc ON u.id = lc.user_id 
+            WHERE u.email = $1`, [email]);
+
+        if (userRes.rows.length === 0) return;
+        const userData = userRes.rows[0];
+
+        // Fresh vouchers
+        const voucherRes = await db.query(`
+            SELECT vt.title FROM user_vouchers uv 
+            JOIN voucher_templates vt ON uv.template_id = vt.id 
+            WHERE uv.user_id = (SELECT id FROM users WHERE email = $1) 
+            AND uv.status = 'active'`, [email]);
+
+        // SyncWallet
+        await module.exports.syncWallet(userData, voucherRes.rows);
+
+    } catch (err) {
+        console.error("Critical Sync Error:", err.message);
+    }
+};
+
+module.exports = { generateGoogleWalletLink, syncWallet, triggerFullSync };

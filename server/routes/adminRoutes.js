@@ -2,6 +2,7 @@ const express = require('express');
 const router = express.Router();
 const db = require('../config/db');
 const { syncWallet } = require('../walletService');
+const { triggerFullSync } = require('../walletService');
 
 // Admin login logic
 router.post('/login', async (req, res) => {
@@ -73,7 +74,10 @@ router.post('/update-user', async (req, res) => {
         const voucherRes = await db.query(voucherQuery, [userId]);
 
         await db.query('COMMIT');
-        syncWallet(userData, voucherRes.rows);
+        const emailRes = await db.query('SELECT email FROM users WHERE id = $1', [userId]);
+        if (emailRes.rows.length > 0) {
+            triggerFullSync(db, emailRes.rows[0].email); // СИНХРОНИЗАЦИЯ
+        }
 
         res.json({ success: true });
     } catch (err) {
