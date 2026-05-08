@@ -11,12 +11,8 @@ const getCredentials = () => {
         } else {
             keys = require('./google-key.json');
         }
-
-        // This is the "Magic Fix" for the 401 error on Render:
-        // We use the official helper to build the auth object
         const auth = google.auth.fromJSON(keys);
         auth.scopes = ['https://www.googleapis.com/auth/wallet_object.issuer'];
-
         return { auth, clientEmail: keys.client_email, privateKey: keys.private_key };
     } catch (error) {
         console.error("❌ CRITICAL: Auth Initialization Failed:", error.message);
@@ -25,90 +21,107 @@ const getCredentials = () => {
 };
 
 const ISSUER_ID = '3388000000023127113';
-const CLASS_ID = 'TheMinersLoyalty';
+const GENERIC_CLASS_ID = 'TheMinersGeneric';
 
-const buildLoyaltyObject = (user, activeVouchers = []) => {
+// GENERIC PASS
+const buildGenericObject = (user, activeVouchers = []) => {
     const tier = getTierData(user.points_balance, user.tier);
     const baseUrl = process.env.NODE_ENV === 'production'
         ? 'https://miners-loyalty-system-1.onrender.com'
         : 'http://localhost:5173';
 
     const voucherList = activeVouchers.length > 0
-        ? activeVouchers.map(v => `- ${v.title}`).join('\n')
+        ? activeVouchers.map(v => `• ${v.title}`).join('\n')
         : "No active vouchers";
 
     const fullName = [user.first_name, user.last_name]
-        .filter(Boolean)           // drop null/undefined/empty
+        .filter(Boolean)
         .map(s => s.toUpperCase())
-        .join(' ') || 'MEMBER';    // fallback only if both are missing
+        .join(' ') || 'MEMBER';
+
+    const branchDisplay = user.home_branch ? `The Miners ${user.home_branch}` : "The Miners Coffee Club";
 
     return {
         id: `${ISSUER_ID}.${user.qr_code_token}`,
-        classId: `${ISSUER_ID}.${CLASS_ID}`,
-        state: 'ACTIVE',
-        accountHolderName: fullName,   // ← this is what renders above the QR
-        accountId: user.qr_code_token,
+        classId: `${ISSUER_ID}.${GENERIC_CLASS_ID}`,
+        logo: {
+            sourceUri: { uri: "https://cdn.myshoptet.com/usr/www.theminers.eu/user/logos/black-logo2.svg?v=1777204447502" },
+            contentDescription: { defaultValue: { language: 'en-US', value: "The Miners Logo" } }
+        },
+        cardTitle: { defaultValue: { language: 'en-US', value: "The Miners Coffee Club" } },
+        subheader: { defaultValue: { language: "en-US", value: branchDisplay } },
+        header: { defaultValue: { language: "en-US", value: fullName } },
+
+        // Все блоки данных объединяем в ОДИН массив textModulesData
+        textModulesData: [
+            {
+                id: "tier",
+                header: "Tier",
+                body: tier.tierName.toUpperCase()
+            },
+            {
+                id: "points",
+                header: "Points",
+                body: String(user.points_balance)
+            },
+            {
+                id: "vouchers",
+                header: "My vouchers",
+                body: voucherList
+            },
+            {
+                id: "progress",
+                header: "Next goal",
+                body: tier.nextTierText.toUpperCase()
+            }
+        ],
         barcode: {
-            type: 'QR_CODE',
+            type: "QR_CODE",
             value: user.qr_code_token,
             alternateText: user.qr_code_token
         },
-        heroImage: { sourceUri: { uri: `${baseUrl}/banners/${tier.banner}` } },
-        loyaltyPoints: {
-            label: 'Points',
-            balance: { string: String(user.points_balance) }
+        heroImage: {
+            sourceUri: { uri: `${baseUrl}/banners/${tier.banner}` }
         },
-        linksModuleData: {
-            uris: [{
-                uri: `${baseUrl}/?email=${user.email}`,
-                description: 'Open My Profile & Shop',
-                id: 'profile_link'
-            }]
-        },
-        textModulesData: [
-            { header: 'TIER', body: tier.tierName, id: 'tier' },
-            { header: 'MY VOUCHERS', body: voucherList, id: 'vouchers_list' },
-            { header: 'BENEFITS', body: tier.benefits, id: 'benefits' },
-            { header: 'NEXT TIER', body: tier.nextTierText, id: 'progress' }
-        ]
+        hexBackgroundColor: "#000000"
     };
 };
 
-// Used for the "Save to Google Wallet" button
 const generateGoogleWalletLink = (user, activeVouchers = []) => {
     const creds = getCredentials();
     if (!creds) return null;
 
-    const loyaltyObject = buildLoyaltyObject(user, activeVouchers);
+    const genericObject = buildGenericObject(user, activeVouchers);
     const claims = {
         iss: creds.clientEmail,
         aud: 'google',
         typ: 'savetowallet',
         origins: ["http://localhost:5173", "https://miners-loyalty-system-1.onrender.com"],
-        payload: { loyaltyObjects: [loyaltyObject] }
+        payload: {
+            genericObjects: [genericObject]
+        }
     };
 
-    // Use the private key from the loaded credentials
     const pk = creds.privateKey.replace(/\\n/g, '\n');
     return jwt.sign(claims, pk, { algorithm: 'RS256' });
 };
 
-// Used for background syncing (Admin updates / Purchases)
 const syncWallet = async (user, activeVouchers = []) => {
     const creds = getCredentials();
     if (!creds) return;
 
     try {
         const walletClient = google.walletobjects({ version: 'v1', auth: creds.auth });
-        const loyaltyObject = buildLoyaltyObject(user, activeVouchers);
+        const genericObject = buildGenericObject(user, activeVouchers);
         const resourceId = `${ISSUER_ID}.${user.qr_code_token}`;
 
-        await walletClient.loyaltyobject.patch({
+        await walletClient.genericobject.patch({
             resourceId: resourceId,
-            requestBody: loyaltyObject
+            requestBody: genericObject,
+            auth: creds.auth
         });
 
-        console.log(`[SYNC] ✅ Google Wallet success: ${user.email}`);
+        console.log(`[SYNC] ✅ Generic Wallet success: ${user.email}`);
     } catch (err) {
         console.error(`[SYNC] ❌ Google API Error: ${err.message}`);
         if (err.response) console.error(JSON.stringify(err.response.data));
@@ -118,9 +131,10 @@ const syncWallet = async (user, activeVouchers = []) => {
 const triggerFullSync = async (email) => {
     try {
         const userRes = await db.query(`
-            SELECT u.email, u.first_name, u.last_name, lc.points_balance, lc.tier, lc.qr_code_token, u.id as user_uuid
+            SELECT u.email, u.first_name, u.last_name, lc.points_balance, lc.tier, lc.qr_code_token, b.name as home_branch, u.id as user_uuid
             FROM users u 
             JOIN loyalty_cards lc ON u.id = lc.user_id 
+            JOIN branches b ON u.home_branch_id = b.id
             WHERE u.email = $1`, [email]);
 
         if (userRes.rows.length === 0) return;
