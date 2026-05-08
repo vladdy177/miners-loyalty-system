@@ -29,7 +29,6 @@ const CLASS_ID = 'TheMinersLoyalty';
 
 const buildLoyaltyObject = (user, activeVouchers = []) => {
     const tier = getTierData(user.points_balance, user.tier);
-    const fullName = `${(user.first_name || 'MEMBER').toUpperCase()} ${(user.last_name || '').toUpperCase()}`;
     const baseUrl = process.env.NODE_ENV === 'production'
         ? 'https://miners-loyalty-system-1.onrender.com'
         : 'http://localhost:5173';
@@ -38,17 +37,27 @@ const buildLoyaltyObject = (user, activeVouchers = []) => {
         ? activeVouchers.map(v => `- ${v.title}`).join('\n')
         : "No active vouchers";
 
+    const fullName = [user.first_name, user.last_name]
+        .filter(Boolean)           // drop null/undefined/empty
+        .map(s => s.toUpperCase())
+        .join(' ') || 'MEMBER';    // fallback only if both are missing
+
     return {
         id: `${ISSUER_ID}.${user.qr_code_token}`,
         classId: `${ISSUER_ID}.${CLASS_ID}`,
         state: 'ACTIVE',
-        accountHolderName: fullName,
+        accountHolderName: fullName,   // ← this is what renders above the QR
         accountId: user.qr_code_token,
-        primaryLabels: [{ label: 'NAME', defaultValue: { language: 'en-US', value: fullName } }],
-        secondaryLabels: [{ label: 'TIER', defaultValue: { language: 'en-US', value: tier.tierName } }],
-        barcode: { type: 'QR_CODE', value: user.qr_code_token, alternateText: user.qr_code_token },
+        barcode: {
+            type: 'QR_CODE',
+            value: user.qr_code_token,
+            alternateText: user.qr_code_token
+        },
         heroImage: { sourceUri: { uri: `${baseUrl}/banners/${tier.banner}` } },
-        loyaltyPoints: { label: 'Points', balance: { string: String(user.points_balance) } },
+        loyaltyPoints: {
+            label: 'Points',
+            balance: { string: String(user.points_balance) }
+        },
         linksModuleData: {
             uris: [{
                 uri: `${baseUrl}/?email=${user.email}`,
@@ -57,6 +66,7 @@ const buildLoyaltyObject = (user, activeVouchers = []) => {
             }]
         },
         textModulesData: [
+            { header: 'TIER', body: tier.tierName, id: 'tier' },
             { header: 'MY VOUCHERS', body: voucherList, id: 'vouchers_list' },
             { header: 'BENEFITS', body: tier.benefits, id: 'benefits' },
             { header: 'NEXT TIER', body: tier.nextTierText, id: 'progress' }
