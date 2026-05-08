@@ -59,19 +59,19 @@ const buildGenericObject = (user, activeVouchers = []) => {
         textModulesData: [
             {
                 id: "tier_main",
-                label: "Tier",
-                value: tier.tierName.toUpperCase()
+                header: "Tier",
+                body: tier.tierName.toUpperCase()
             },
             {
                 id: "points_main",
-                label: "Points",
-                value: String(user.points_balance)
+                header: "Points",
+                body: String(user.points_balance)
             },
-            // {
-            //     id: "vouchers_details",
-            //     header: "MY ACTIVE VOUCHERS",
-            //     body: voucherList
-            // },
+            {
+                id: "vouchers_details",
+                header: "MY ACTIVE VOUCHERS",
+                body: voucherList
+            },
             {
                 id: "benefits_details",
                 header: "TIER BENEFITS",
