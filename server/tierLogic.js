@@ -10,26 +10,26 @@ const getTierData = (points, dbTier) => {
     }
 
     // Customer levels 
-    if (points >= 30000) {
+    if (dbTier === 'GOLD') {
         return {
             tierName: 'GOLD PASS',
             banner: 'GOLD.png',
             benefits: '10% OFF EVERYTHING',
             nextTierText: 'MAXIMUM PASS REACHED'
         };
-    } else if (points >= 15000) {
+    } else if (dbTier === 'SILVER') {
         return {
             tierName: 'SILVER PASS',
             banner: 'SILVER.png',
             benefits: '5% OFF EVERYTHING',
-            nextTierText: `${30000 - points} POINTS TO GOLD PASS`
+            nextTierText: `GET ${30000 - points} MORE POINTS TO BUY GOLD PASS`
         };
     } else {
         return {
             tierName: 'STANDARD PASS',
             banner: 'STANDARD.png',
             benefits: 'COLLECT POINTS FOR REWARDS',
-            nextTierText: `${15000 - points} POINTS TO SILVER PASS`
+            nextTierText: `GET ${15000 - points} MORE POINTS TO BUY SILVER PASS`
         };
     }
 };
