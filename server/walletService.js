@@ -45,11 +45,13 @@ const buildLoyaltyObject = (user, activeVouchers = []) => {
         ? activeVouchers.map(v => `- ${v.title}`).join('\n')
         : "No active vouchers";
 
+    const fullName = `${(user.first_name || 'GUEST').toUpperCase()} ${(user.last_name || '').toUpperCase()}`;
+
     return {
         id: `${ISSUER_ID}.${user.qr_code_token}`,
         classId: `${ISSUER_ID}.${CLASS_ID}`,
         state: 'ACTIVE',
-        accountHolderName: `${user.first_name.toUpperCase()} ${user.last_name.toUpperCase()}`,
+        accountHolderName: fullName,
         accountId: user.qr_code_token,
         barcode: { type: 'QR_CODE', value: user.qr_code_token },
         heroImage: { sourceUri: { uri: `${baseUrl}/banners/${tier.banner}` } },
@@ -94,6 +96,8 @@ const syncWallet = async (user, activeVouchers) => {
     try {
         const client = getWalletClient();
         const loyaltyObject = buildLoyaltyObject(user, activeVouchers);
+
+        console.log(`Attempting to sync Wallet for: ${user.email}`);
 
         await client.loyaltyobject.patch({
             resourceId: `${ISSUER_ID}.${user.qr_code_token}`,
