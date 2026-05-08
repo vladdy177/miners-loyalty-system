@@ -89,6 +89,8 @@ const syncWallet = async (user, activeVouchers = []) => {
             ['https://www.googleapis.com/auth/wallet_object.issuer']
         );
 
+        await auth.authorize();
+
         // Инициализируем клиент ПРЯМО ТУТ
         const walletClient = google.walletobjects({ version: 'v1', auth });
 
@@ -98,8 +100,7 @@ const syncWallet = async (user, activeVouchers = []) => {
         // Вызываем patch и ПЕРЕДАЕМ auth явно
         await walletClient.loyaltyobject.patch({
             resourceId: resourceId,
-            requestBody: loyaltyObject,
-            auth: auth
+            requestBody: loyaltyObject
         });
 
         console.log(`[SYNC] ✅ Google Wallet updated: ${user.email}`);
