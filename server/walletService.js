@@ -1,33 +1,23 @@
 const { google } = require('googleapis');
 const jwt = require('jsonwebtoken');
 const { getTierData } = require('./tierLogic');
+const db = require('./config/db');
 
 // Улучшенная функция получения ключей
 const getCredentials = () => {
     try {
         let keys;
         if (process.env.GOOGLE_SERVICE_ACCOUNT_JSON) {
-            // На Render берем из переменной окружения
             keys = JSON.parse(process.env.GOOGLE_SERVICE_ACCOUNT_JSON);
         } else {
-            // Локально берем из файла
             keys = require('./google-key.json');
         }
+        if (!keys || !keys.private_key) return null;
 
-        if (!keys || !keys.private_key || !keys.client_email) {
-            console.error("❌ CRITICAL: Google Keys are missing fields!");
-            return null;
-        }
-
-        // Исправляем переносы строк для приватного ключа
-        const formattedKey = keys.private_key.replace(/\\n/g, '\n');
-
-        return {
-            client_email: keys.client_email,
-            private_key: formattedKey
-        };
+        keys.private_key = keys.private_key.replace(/\\n/g, '\n');
+        return keys;
     } catch (error) {
-        console.error("❌ CRITICAL: Could not parse Google Credentials:", error.message);
+        console.error("❌ Google Credentials Error:", error.message);
         return null;
     }
 };
@@ -89,10 +79,7 @@ const generateGoogleWalletLink = (user, activeVouchers = []) => {
 
 const syncWallet = async (user, activeVouchers = []) => {
     const creds = getCredentials();
-    if (!creds) {
-        console.error("[SYNC] ❌ Aborting: No credentials available");
-        return;
-    }
+    if (!creds) return;
 
     try {
         const auth = new google.auth.JWT(
@@ -102,24 +89,29 @@ const syncWallet = async (user, activeVouchers = []) => {
             ['https://www.googleapis.com/auth/wallet_object.issuer']
         );
 
+        // Инициализируем клиент ПРЯМО ТУТ
         const walletClient = google.walletobjects({ version: 'v1', auth });
+
         const loyaltyObject = buildLoyaltyObject(user, activeVouchers);
         const resourceId = `${ISSUER_ID}.${user.qr_code_token}`;
 
+        // Вызываем patch и ПЕРЕДАЕМ auth явно
         await walletClient.loyaltyobject.patch({
             resourceId: resourceId,
-            requestBody: loyaltyObject
+            requestBody: loyaltyObject,
+            auth: auth
         });
 
         console.log(`[SYNC] ✅ Google Wallet updated: ${user.email}`);
     } catch (err) {
         console.error(`[SYNC] ❌ Google API Error: ${err.message}`);
+        if (err.response) console.error(JSON.stringify(err.response.data));
     }
 };
 
-const triggerFullSync = async (db, email) => {
+const triggerFullSync = async (email) => {
     try {
-        // Выполняем запрос к базе
+        // Мы НЕ передаем db извне, используем локальный импорт
         const userRes = await db.query(`
             SELECT u.email, u.first_name, u.last_name, lc.points_balance, lc.tier, lc.qr_code_token, u.id as user_uuid
             FROM users u 
@@ -134,10 +126,9 @@ const triggerFullSync = async (db, email) => {
             JOIN voucher_templates vt ON uv.template_id = vt.id 
             WHERE uv.user_id = $1 AND uv.status = 'active'`, [userData.user_uuid]);
 
-        // Передаем данные в функцию синхронизации
         await syncWallet(userData, voucherRes.rows);
     } catch (err) {
-        console.error("Full Sync DB Error:", err.message);
+        console.error("[SYNC] Full Sync DB Error:", err.message);
     }
 };
 

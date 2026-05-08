@@ -52,9 +52,7 @@ router.post('/purchase', async (req, res) => {
 
         await db.query('COMMIT');
 
-        setTimeout(() => {
-            triggerFullSync(db, email).catch(e => console.error("Async sync error:", e));
-        }, 100);
+        triggerFullSync(email).catch(e => console.error(e));
 
         res.json({ success: true, message: `Purchased ${reward.title}!` });
     } catch (err) {
