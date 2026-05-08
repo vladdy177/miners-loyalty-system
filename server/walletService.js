@@ -53,7 +53,7 @@ const buildLoyaltyObject = (user, activeVouchers = []) => {
         id: `${ISSUER_ID}.${user.qr_code_token}`,
         classId: `${ISSUER_ID}.${CLASS_ID}`,
         state: 'ACTIVE',
-        accountHolderName: fullName,
+        accountName: fullName,
         accountId: user.qr_code_token,
         barcode: { type: 'QR_CODE', value: user.qr_code_token },
         heroImage: { sourceUri: { uri: `${baseUrl}/banners/${tier.banner}` } },
