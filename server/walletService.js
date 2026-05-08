@@ -27,7 +27,7 @@ const GENERIC_CLASS_ID = 'TheMinersGeneric';
 const buildGenericObject = (user, activeVouchers = []) => {
     const tier = getTierData(user.points_balance, user.tier);
     const baseUrl = process.env.NODE_ENV === 'production'
-        ? 'https://miners-loyalty-frontend.onrender.com'
+        ? 'https://miners-loyalty-system-1.onrender.com'
         : 'http://localhost:5173';
 
     // 1. Форматируем список ваучеров
