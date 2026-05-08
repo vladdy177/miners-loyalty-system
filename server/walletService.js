@@ -31,7 +31,7 @@ const buildLoyaltyObject = (user, activeVouchers = []) => {
     const tier = getTierData(user.points_balance, user.tier);
     const fullName = `${(user.first_name || 'MEMBER').toUpperCase()} ${(user.last_name || '').toUpperCase()}`;
     const baseUrl = process.env.NODE_ENV === 'production'
-        ? 'https://miners-loyalty-frontend.onrender.com'
+        ? 'https://miners-loyalty-system-1.onrender.com'
         : 'http://localhost:5173';
 
     const voucherList = activeVouchers.length > 0

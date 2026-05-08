@@ -4,7 +4,7 @@ import { QRCodeSVG } from "qrcode.react";
 import Market from "./Market";
 import VoucherRedeem from "./VoucherRedeem";
 import styles from "./styles/Profile.module.css";
-import googleWalletBtn from "../assets/add-to-goole-wallet.svg";
+import googleWalletBtn from "/public/add-to-google-wallet.svg";
 
 const Profile = ({ email }) => {
     const [user, setUser] = useState(null);
