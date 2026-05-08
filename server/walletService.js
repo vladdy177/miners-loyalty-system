@@ -23,15 +23,17 @@ const ISSUER_ID = '3388000000023127113';
 const CLASS_ID = 'TheMinersLoyalty';
 
 // Helper to get the authenticated Google Wallet client
-const getWalletClient = () => {
-    const auth = new google.auth.JWT(
-        googleKey.client_email,
-        null,
-        googleKey.private_key,
-        ['https://www.googleapis.com/auth/wallet_object.issuer']
-    );
-    return google.walletobjects({ version: 'v1', auth });
-}
+const auth = new google.auth.JWT(
+    googleKey.client_email,
+    null,
+    googleKey.private_key,
+    ['https://www.googleapis.com/auth/wallet_object.issuer']
+);
+
+const walletClient = google.walletobjects({
+    version: 'v1',
+    auth: auth
+});
 
 // Logic to build the Card Object (used for both Create and Sync)
 const buildLoyaltyObject = (user, activeVouchers = []) => {
@@ -111,24 +113,23 @@ const generateGoogleWalletLink = (user, activeVouchers) => {
 // Sync function for Admin updates
 const syncWallet = async (user, activeVouchers = []) => {
     try {
-        const client = getWalletClient();
         const loyaltyObject = buildLoyaltyObject(user, activeVouchers);
-
         const resourceId = `${ISSUER_ID}.${user.qr_code_token}`;
 
-        console.log(`[SYNC] Пытаюсь обновить карту: ${resourceId}`);
+        console.log(`[SYNC] Авторизация и обновление карты: ${resourceId}`);
 
-        // Используем метод patch для частичного обновления данных
-        await client.loyaltyobject.patch({
+        // Явно просим auth получить токен перед запросом
+        await auth.authorize();
+
+        await walletClient.loyaltyobject.patch({
             resourceId: resourceId,
             requestBody: loyaltyObject
         });
 
-        console.log(`[SYNC] Успешно обновлено для ${user.email}`);
+        console.log(`[SYNC] Успешно синхронизировано с Google`);
     } catch (err) {
-        console.error(`[SYNC] Ошибка синхронизации:`);
+        console.error(`[SYNC] Ошибка 401/403. Проверь права доступа.`);
         if (err.response) {
-            // Выведет подробности от Google (например, если ID не найден)
             console.error(JSON.stringify(err.response.data, null, 2));
         } else {
             console.error(err.message);
