@@ -121,6 +121,9 @@ const syncWallet = async (user, activeVouchers = []) => {
             ['https://www.googleapis.com/auth/wallet_object.issuer']
         );
 
+        const tokens = await auth.authorize();
+        auth.setCredentials(tokens);
+
         const walletClient = google.walletobjects({ version: 'v1', auth });
         const loyaltyObject = buildLoyaltyObject(user, activeVouchers);
         const resourceId = `${ISSUER_ID}.${user.qr_code_token}`;
@@ -130,15 +133,18 @@ const syncWallet = async (user, activeVouchers = []) => {
             requestBody: loyaltyObject
         });
 
-        console.log(`[SYNC] Google Wallet updated for ${user.email}`);
+        console.log(`[SYNC] ✅ Google Wallet updated: ${user.email}`);
     } catch (err) {
-        console.error(`[SYNC] Error: ${err.message}`);
+        console.error(`[SYNC] ❌ Patch Error: ${err.message}`);
         if (err.response) console.error(JSON.stringify(err.response.data));
     }
 };
 
 const triggerFullSync = async (db, email) => {
     try {
+
+        await new Promise(resolve => setTimeout(resolve, 500));
+
         const userRes = await db.query(`
             SELECT u.email, u.first_name, u.last_name, lc.points_balance, lc.tier, lc.qr_code_token, u.id as user_uuid
             FROM users u 
