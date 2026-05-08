@@ -76,7 +76,7 @@ router.post('/update-user', async (req, res) => {
         await db.query('COMMIT');
         const emailRes = await db.query('SELECT email FROM users WHERE id = $1', [userId]);
         if (emailRes.rows.length > 0) {
-            triggerFullSync(db, emailRes.rows[0].email); // СИНХРОНИЗАЦИЯ
+            triggerFullSync(db, emailRes.rows[0].email);
         }
 
         res.json({ success: true });

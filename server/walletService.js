@@ -30,7 +30,7 @@ const getWalletClient = () => {
         googleKey.private_key,
         ['https://www.googleapis.com/auth/wallet_object.issuer']
     );
-    return google.walletObjects({ version: 'v1', auth });
+    return google.walletobjects({ version: 'v1', auth });
 }
 
 // Logic to build the Card Object (used for both Create and Sync)
@@ -54,13 +54,19 @@ const buildLoyaltyObject = (user, activeVouchers = []) => {
         classId: `${ISSUER_ID}.${CLASS_ID}`,
         state: 'ACTIVE',
         accountHolderName: fullName,
-        accountName: fullName,
         accountId: user.qr_code_token,
+
+        primaryLabels: [
+            {
+                label: 'NAME',
+                defaultValue: { language: 'en-US', value: fullName }
+            }
+        ],
 
         secondaryLabels: [
             {
-                label: 'MEMBER',
-                defaultValue: { language: 'en-US', value: fullName }
+                label: 'TIER',
+                defaultValue: { language: 'en-US', value: tier.tierName }
             }
         ],
 
@@ -103,20 +109,30 @@ const generateGoogleWalletLink = (user, activeVouchers) => {
 };
 
 // Sync function for Admin updates
-const syncWallet = async (user, activeVouchers) => {
+const syncWallet = async (user, activeVouchers = []) => {
     try {
         const client = getWalletClient();
         const loyaltyObject = buildLoyaltyObject(user, activeVouchers);
 
-        console.log(`Attempting to sync Wallet for: ${user.email}`);
+        const resourceId = `${ISSUER_ID}.${user.qr_code_token}`;
 
+        console.log(`[SYNC] Пытаюсь обновить карту: ${resourceId}`);
+
+        // Используем метод patch для частичного обновления данных
         await client.loyaltyobject.patch({
-            resourceId: `${ISSUER_ID}.${user.qr_code_token}`,
+            resourceId: resourceId,
             requestBody: loyaltyObject
         });
-        console.log(`Synced Google Wallet for ${user.email}`);
+
+        console.log(`[SYNC] Успешно обновлено для ${user.email}`);
     } catch (err) {
-        console.error("Wallet Sync Error:", err.response?.data || err.message);
+        console.error(`[SYNC] Ошибка синхронизации:`);
+        if (err.response) {
+            // Выведет подробности от Google (например, если ID не найден)
+            console.error(JSON.stringify(err.response.data, null, 2));
+        } else {
+            console.error(err.message);
+        }
     }
 };
 
