@@ -3,7 +3,6 @@ const jwt = require('jsonwebtoken');
 const { getTierData } = require('./tierLogic');
 const db = require('./config/db');
 
-// Улучшенная функция получения ключей
 const getCredentials = () => {
     try {
         let keys;
@@ -12,12 +11,15 @@ const getCredentials = () => {
         } else {
             keys = require('./google-key.json');
         }
-        if (!keys || !keys.private_key) return null;
 
-        keys.private_key = keys.private_key.replace(/\\n/g, '\n');
-        return keys;
+        // This is the "Magic Fix" for the 401 error on Render:
+        // We use the official helper to build the auth object
+        const auth = google.auth.fromJSON(keys);
+        auth.scopes = ['https://www.googleapis.com/auth/wallet_object.issuer'];
+
+        return { auth, clientEmail: keys.client_email, privateKey: keys.private_key };
     } catch (error) {
-        console.error("❌ Google Credentials Error:", error.message);
+        console.error("❌ CRITICAL: Auth Initialization Failed:", error.message);
         return null;
     }
 };
@@ -62,48 +64,41 @@ const buildLoyaltyObject = (user, activeVouchers = []) => {
     };
 };
 
+// Used for the "Save to Google Wallet" button
 const generateGoogleWalletLink = (user, activeVouchers = []) => {
     const creds = getCredentials();
     if (!creds) return null;
 
     const loyaltyObject = buildLoyaltyObject(user, activeVouchers);
     const claims = {
-        iss: creds.client_email,
+        iss: creds.clientEmail,
         aud: 'google',
         typ: 'savetowallet',
         origins: ["http://localhost:5173", "https://miners-loyalty-system-1.onrender.com"],
         payload: { loyaltyObjects: [loyaltyObject] }
     };
-    return jwt.sign(claims, creds.private_key, { algorithm: 'RS256' });
+
+    // Use the private key from the loaded credentials
+    const pk = creds.privateKey.replace(/\\n/g, '\n');
+    return jwt.sign(claims, pk, { algorithm: 'RS256' });
 };
 
+// Used for background syncing (Admin updates / Purchases)
 const syncWallet = async (user, activeVouchers = []) => {
     const creds = getCredentials();
     if (!creds) return;
 
     try {
-        const auth = new google.auth.JWT(
-            creds.client_email,
-            null,
-            creds.private_key,
-            ['https://www.googleapis.com/auth/wallet_object.issuer']
-        );
-
-        await auth.authorize();
-
-        // Инициализируем клиент ПРЯМО ТУТ
-        const walletClient = google.walletobjects({ version: 'v1', auth });
-
+        const walletClient = google.walletobjects({ version: 'v1', auth: creds.auth });
         const loyaltyObject = buildLoyaltyObject(user, activeVouchers);
         const resourceId = `${ISSUER_ID}.${user.qr_code_token}`;
 
-        // Вызываем patch и ПЕРЕДАЕМ auth явно
         await walletClient.loyaltyobject.patch({
             resourceId: resourceId,
             requestBody: loyaltyObject
         });
 
-        console.log(`[SYNC] ✅ Google Wallet updated: ${user.email}`);
+        console.log(`[SYNC] ✅ Google Wallet success: ${user.email}`);
     } catch (err) {
         console.error(`[SYNC] ❌ Google API Error: ${err.message}`);
         if (err.response) console.error(JSON.stringify(err.response.data));
@@ -112,7 +107,6 @@ const syncWallet = async (user, activeVouchers = []) => {
 
 const triggerFullSync = async (email) => {
     try {
-        // Мы НЕ передаем db извне, используем локальный импорт
         const userRes = await db.query(`
             SELECT u.email, u.first_name, u.last_name, lc.points_balance, lc.tier, lc.qr_code_token, u.id as user_uuid
             FROM users u 
