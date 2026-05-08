@@ -2,20 +2,32 @@ const { google } = require('googleapis');
 const jwt = require('jsonwebtoken');
 const { getTierData } = require('./tierLogic');
 
+// Улучшенная функция получения ключей
 const getCredentials = () => {
-    let keys;
     try {
+        let keys;
         if (process.env.GOOGLE_SERVICE_ACCOUNT_JSON) {
+            // На Render берем из переменной окружения
             keys = JSON.parse(process.env.GOOGLE_SERVICE_ACCOUNT_JSON);
         } else {
+            // Локально берем из файла
             keys = require('./google-key.json');
         }
-        if (keys && keys.private_key) {
-            keys.private_key = keys.private_key.replace(/\\n/g, '\n');
+
+        if (!keys || !keys.private_key || !keys.client_email) {
+            console.error("❌ CRITICAL: Google Keys are missing fields!");
+            return null;
         }
-        return keys;
+
+        // Исправляем переносы строк для приватного ключа
+        const formattedKey = keys.private_key.replace(/\\n/g, '\n');
+
+        return {
+            client_email: keys.client_email,
+            private_key: formattedKey
+        };
     } catch (error) {
-        console.error("CRITICAL: Could not load Google Credentials", error.message);
+        console.error("❌ CRITICAL: Could not parse Google Credentials:", error.message);
         return null;
     }
 };
@@ -25,6 +37,7 @@ const CLASS_ID = 'TheMinersLoyalty';
 
 const buildLoyaltyObject = (user, activeVouchers = []) => {
     const tier = getTierData(user.points_balance, user.tier);
+    const fullName = `${(user.first_name || 'MEMBER').toUpperCase()} ${(user.last_name || '').toUpperCase()}`;
     const baseUrl = process.env.NODE_ENV === 'production'
         ? 'https://miners-loyalty-frontend.onrender.com'
         : 'http://localhost:5173';
@@ -33,54 +46,24 @@ const buildLoyaltyObject = (user, activeVouchers = []) => {
         ? activeVouchers.map(v => `- ${v.title}`).join('\n')
         : "No active vouchers";
 
-    const firstName = user.first_name || 'MEMBER';
-    const lastName = user.last_name || '';
-    const fullName = `${firstName} ${lastName}`.toUpperCase();
-
     return {
         id: `${ISSUER_ID}.${user.qr_code_token}`,
         classId: `${ISSUER_ID}.${CLASS_ID}`,
         state: 'ACTIVE',
         accountHolderName: fullName,
         accountId: user.qr_code_token,
-
-        primaryLabels: [
-            {
-                label: 'NAME',
-                defaultValue: { language: 'en-US', value: fullName }
-            }
-        ],
-
-        secondaryLabels: [
-            {
-                label: 'TIER',
-                defaultValue: { language: 'en-US', value: tier.tierName }
-            }
-        ],
-
-        barcode: {
-            type: 'QR_CODE',
-            value: user.qr_code_token,
-            alternateText: user.qr_code_token
-        },
-        heroImage: {
-            sourceUri: { uri: `${baseUrl}/banners/${tier.banner}` }
-        },
-        loyaltyPoints: {
-            label: 'Points',
-            balance: { string: String(user.points_balance) }
-        },
-
+        primaryLabels: [{ label: 'NAME', defaultValue: { language: 'en-US', value: fullName } }],
+        secondaryLabels: [{ label: 'TIER', defaultValue: { language: 'en-US', value: tier.tierName } }],
+        barcode: { type: 'QR_CODE', value: user.qr_code_token, alternateText: user.qr_code_token },
+        heroImage: { sourceUri: { uri: `${baseUrl}/banners/${tier.banner}` } },
+        loyaltyPoints: { label: 'Points', balance: { string: String(user.points_balance) } },
         linksModuleData: {
-            uris: [
-                {
-                    uri: `${baseUrl}/?email=${user.email}`,
-                    description: 'Open My Profile & Shop',
-                    id: 'profile_link'
-                }
-            ]
+            uris: [{
+                uri: `${baseUrl}/?email=${user.email}`,
+                description: 'Open My Profile & Shop',
+                id: 'profile_link'
+            }]
         },
-
         textModulesData: [
             { header: 'MY VOUCHERS', body: voucherList, id: 'vouchers_list' },
             { header: 'BENEFITS', body: tier.benefits, id: 'benefits' },
@@ -90,39 +73,34 @@ const buildLoyaltyObject = (user, activeVouchers = []) => {
 };
 
 const generateGoogleWalletLink = (user, activeVouchers = []) => {
-    const keys = getCredentials();
-    if (!keys) return null;
+    const creds = getCredentials();
+    if (!creds) return null;
 
     const loyaltyObject = buildLoyaltyObject(user, activeVouchers);
-
     const claims = {
-        iss: keys.client_email,
+        iss: creds.client_email,
         aud: 'google',
         typ: 'savetowallet',
         origins: ["http://localhost:5173", "https://miners-loyalty-system-1.onrender.com"],
-        payload: {
-            loyaltyObjects: [loyaltyObject]
-        }
+        payload: { loyaltyObjects: [loyaltyObject] }
     };
-
-    return jwt.sign(claims, keys.private_key, { algorithm: 'RS256' });
+    return jwt.sign(claims, creds.private_key, { algorithm: 'RS256' });
 };
 
-// Admin panel sync
 const syncWallet = async (user, activeVouchers = []) => {
-    const keys = getCredentials();
-    if (!keys) return;
+    const creds = getCredentials();
+    if (!creds) {
+        console.error("[SYNC] ❌ Aborting: No credentials available");
+        return;
+    }
 
     try {
         const auth = new google.auth.JWT(
-            keys.client_email,
+            creds.client_email,
             null,
-            keys.private_key,
+            creds.private_key,
             ['https://www.googleapis.com/auth/wallet_object.issuer']
         );
-
-        const tokens = await auth.authorize();
-        auth.setCredentials(tokens);
 
         const walletClient = google.walletobjects({ version: 'v1', auth });
         const loyaltyObject = buildLoyaltyObject(user, activeVouchers);
@@ -135,16 +113,13 @@ const syncWallet = async (user, activeVouchers = []) => {
 
         console.log(`[SYNC] ✅ Google Wallet updated: ${user.email}`);
     } catch (err) {
-        console.error(`[SYNC] ❌ Patch Error: ${err.message}`);
-        if (err.response) console.error(JSON.stringify(err.response.data));
+        console.error(`[SYNC] ❌ Google API Error: ${err.message}`);
     }
 };
 
 const triggerFullSync = async (db, email) => {
     try {
-
-        await new Promise(resolve => setTimeout(resolve, 500));
-
+        // Выполняем запрос к базе
         const userRes = await db.query(`
             SELECT u.email, u.first_name, u.last_name, lc.points_balance, lc.tier, lc.qr_code_token, u.id as user_uuid
             FROM users u 
@@ -159,9 +134,10 @@ const triggerFullSync = async (db, email) => {
             JOIN voucher_templates vt ON uv.template_id = vt.id 
             WHERE uv.user_id = $1 AND uv.status = 'active'`, [userData.user_uuid]);
 
+        // Передаем данные в функцию синхронизации
         await syncWallet(userData, voucherRes.rows);
     } catch (err) {
-        console.error("Full Sync Error:", err.message);
+        console.error("Full Sync DB Error:", err.message);
     }
 };
 
