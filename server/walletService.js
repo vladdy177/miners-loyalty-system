@@ -53,30 +53,25 @@ const buildGenericObject = (user, activeVouchers = []) => {
         subheader: { defaultValue: { language: "en-US", value: branchName } },
         header: { defaultValue: { language: "en-US", value: fullName } },
 
-        // Используем primaryFields и secondaryFields для чистого вида на главной
-        primaryFields: [
-            {
-                id: "tier_main",
-                label: "Tier",
-                value: tier.tierName.toUpperCase()
-            }
-        ],
-        secondaryFields: [
-            {
-                id: "points_main",
-                label: "Points",
-                value: String(user.points_balance)
-            }
-        ],
-
+        
         // --- ДЕТАЛИ КАРТЫ (Меню "3 точки") ---
         // Эти данные Google спрячет в подробности, если на лицевой стороне нет места
         textModulesData: [
             {
-                id: "vouchers_details",
-                header: "MY ACTIVE VOUCHERS",
-                body: voucherList
+                id: "tier_main",
+                label: "Tier",
+                value: tier.tierName.toUpperCase()
             },
+            {
+                id: "points_main",
+                label: "Points",
+                value: String(user.points_balance)
+            },
+            // {
+            //     id: "vouchers_details",
+            //     header: "MY ACTIVE VOUCHERS",
+            //     body: voucherList
+            // },
             {
                 id: "benefits_details",
                 header: "TIER BENEFITS",
