@@ -27,52 +27,79 @@ const GENERIC_CLASS_ID = 'TheMinersGeneric';
 const buildGenericObject = (user, activeVouchers = []) => {
     const tier = getTierData(user.points_balance, user.tier);
     const baseUrl = process.env.NODE_ENV === 'production'
-        ? 'https://miners-loyalty-system-1.onrender.com'
+        ? 'https://miners-loyalty-frontend.onrender.com'
         : 'http://localhost:5173';
 
+    // 1. Форматируем список ваучеров
     const voucherList = activeVouchers.length > 0
         ? activeVouchers.map(v => `• ${v.title}`).join('\n')
-        : "No active vouchers";
+        : "No active vouchers yet.";
 
     const fullName = [user.first_name, user.last_name]
         .filter(Boolean)
-        .map(s => s)
         .join(' ') || 'MEMBER';
+
+    const branchName = user.home_branch ? `${user.home_branch}` : "The Miners Coffee Club";
 
     return {
         id: `${ISSUER_ID}.${user.qr_code_token}`,
         classId: `${ISSUER_ID}.${GENERIC_CLASS_ID}`,
         logo: {
-            sourceUri: { uri: "https://cdn.myshoptet.com/usr/www.theminers.eu/user/logos/black-logo2.svg?v=1777204447502" },
-            contentDescription: { defaultValue: { language: 'en-US', value: "The Miners Logo" } }
+            sourceUri: { uri: "https://cdn.myshoptet.com/usr/www.theminers.eu/user/logos/black-logo2.svg?v=1777204447502" }
         },
         cardTitle: { defaultValue: { language: 'en-US', value: "The Miners Coffee Club" } },
-        subheader: { defaultValue: { language: "en-US", value: user.home_branch } },
+
+        // --- ЛИЦЕВАЯ СТОРОНА (Минимализм) ---
+        subheader: { defaultValue: { language: "en-US", value: branchName } },
         header: { defaultValue: { language: "en-US", value: fullName } },
 
-        // Все блоки данных объединяем в ОДИН массив textModulesData
+        // Используем primaryFields и secondaryFields для чистого вида на главной
+        primaryFields: [
+            {
+                id: "tier_main",
+                label: "Tier",
+                value: tier.tierName.toUpperCase()
+            }
+        ],
+        secondaryFields: [
+            {
+                id: "points_main",
+                label: "Points",
+                value: String(user.points_balance)
+            }
+        ],
+
+        // --- ДЕТАЛИ КАРТЫ (Меню "3 точки") ---
+        // Эти данные Google спрячет в подробности, если на лицевой стороне нет места
         textModulesData: [
             {
-                id: "tier",
-                header: "Tier",
-                body: tier.tierName.toUpperCase()
+                id: "vouchers_details",
+                header: "MY ACTIVE VOUCHERS",
+                body: voucherList
             },
             {
-                id: "points",
-                header: "Points",
-                body: String(user.points_balance)
-            },
-            {
-                id: "benefits",
-                header: "Benefits",
+                id: "benefits_details",
+                header: "TIER BENEFITS",
                 body: tier.benefits
             },
             {
-                id: "progress",
-                header: "Next goal",
+                id: "next_goal_details",
+                header: "NEXT GOAL",
                 body: tier.nextTierText
             }
         ],
+
+        // Кнопка в деталях для перехода на сайт
+        linksModuleData: {
+            uris: [
+                {
+                    uri: `${baseUrl}/?email=${user.email}`,
+                    description: 'MY PROFILE & SHOP',
+                    id: 'profile_link'
+                }
+            ]
+        },
+
         barcode: {
             type: "QR_CODE",
             value: user.qr_code_token,
