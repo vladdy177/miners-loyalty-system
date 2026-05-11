@@ -60,9 +60,16 @@ const Market = ({ userEmail, userPoints, onPurchaseSuccess, userTier }) => {
 
                     return (
                         <div key={item.id} className={styles.rewardCard}>
+                            <div className={styles.imageWrapper}>
+                                <img
+                                    src={item.image_url || "/espresso.jpg"}
+                                    alt={item.title}
+                                    onError={(e) => { e.target.src = "/espresso.jpg"; }}
+                                />
+                            </div>
                             <div className={styles.progressHeader}>
                                 <div className={styles.progressInfo}>
-                                    <span>{userPoints} / {item.cost} points</span>
+                                    <span>{userPoints >= item.cost && item.cost != 0 ? `${item.cost} / ${item.cost} points` : item.cost == 0 ? "FREE" : `${userPoints} / ${item.cost} points`}</span>
                                 </div>
                                 <div className={styles.progressBar}>
                                     <div

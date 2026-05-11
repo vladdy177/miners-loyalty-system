@@ -1,41 +1,81 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
-import { Users, Coins, Ticket } from "lucide-react";
+import { Users, Coins, Ticket, MapPin, TrendingUp, UserCheck } from "lucide-react";
+import styles from "../styles/Dashboard.module.css";
 
 const Dashboard = () => {
-    const [stats, setStats] = useState({ totalUsers: 0, totalPoints: 0, totalVouchers: 0 });
+    const [data, setData] = useState(null);
+    const apiUrl = import.meta.env.VITE_API_URL;
 
     useEffect(() => {
-        const fetchStats = async () => {
-            const apiUrl = import.meta.env.VITE_API_URL;
-            const res = await axios.get(`${apiUrl}/api/admin/users`); // We can count from user list for now
-            const users = res.data;
-            const points = users.reduce((acc, curr) => acc + curr.points_balance, 0);
-            setStats({ totalUsers: users.length, totalPoints: points, totalVouchers: 4 });
-        };
-        fetchStats();
-    }, []);
+        axios.get(`${apiUrl}/api/admin/stats-summary`).then(res => setData(res.data));
+    }, [apiUrl]);
 
-    const cardStyle = { background: 'white', padding: '20px', borderRadius: '12px', boxShadow: '0 4px 6px rgba(0,0,0,0.05)' };
+    if (!data) return <p>Loading Dashboard...</p>;
+
+    const kpis = [
+        {
+            title: "Total Members",
+            value: data.totalUsers,
+            icon: <Users color="white" />,
+            bg: "var(--miners-red)"
+        },
+        {
+            title: "Points in Wallet",
+            value: data.economy.earned - data.economy.burned,
+            icon: <Coins color="black" />,
+            bg: "var(--miners-gold)"
+        },
+        {
+            title: "Avg. Points/User",
+            value: data.avgPoints,
+            icon: <TrendingUp color="white" />,
+            bg: "var(--miners-orange)"
+        },
+        {
+            title: "Top Location",
+            value: data.topBranch,
+            icon: <MapPin color="white" />,
+            bg: "var(--miners-blue-cyan)"
+        },
+        {
+            title: "Active Vouchers",
+            value: data.vouchers.active,
+            icon: <Ticket color="white" />,
+            bg: "var(--miners-magenta)"
+        },
+        {
+            title: "Avg. Customer Age", // Bonus card!
+            value: `${data.avgAge} YRS`,
+            icon: <UserCheck color="white" />,
+            bg: "var(--miners-pink-light)"
+        },
+        {
+            title: "Redemption Rate",
+            value: `${((data.vouchers.used / data.vouchers.total || 0) * 100).toFixed(1)}%`,
+            icon: <UserCheck color="white" />,
+            bg: "var(--miners-green)"
+        },
+    ];
 
     return (
-        <div>
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '20px' }}>
-                <div style={cardStyle}>
-                    <Users size={24} color="#666" />
-                    <p style={{ color: '#888', fontSize: '12px', marginTop: '10px' }}>TOTAL CUSTOMERS</p>
-                    <p style={{ fontSize: '28px', margin: 0 }}>{stats.totalUsers}</p>
-                </div>
-                <div style={cardStyle}>
-                    <Coins size={24} color="#666" />
-                    <p style={{ color: '#888', fontSize: '12px', marginTop: '10px' }}>POINTS IN CIRCULATION</p>
-                    <p style={{ fontSize: '28px', margin: 0 }}>{stats.totalPoints.toLocaleString()}</p>
-                </div>
-                <div style={cardStyle}>
-                    <Ticket size={24} color="#666" />
-                    <p style={{ color: '#888', fontSize: '12px', marginTop: '10px' }}>ACTIVE REWARDS</p>
-                    <p style={{ fontSize: '28px', margin: 0 }}>{stats.totalVouchers}</p>
-                </div>
+        <div className={styles.container}>
+            <div className={styles.grid}>
+                {kpis.map((kpi, index) => (
+                    <div key={index} className={styles.card} style={{ backgroundColor: kpi.bg }}>
+                        <div className={styles.iconWrapper}>{kpi.icon}</div>
+                        <div className={styles.cardInfo}>
+                            <p className={styles.cardTitle}>{kpi.title}</p>
+                            <h2 className={styles.cardValue}>{kpi.value}</h2>
+                        </div>
+                    </div>
+                ))}
+            </div>
+
+            {/* Quick action or message */}
+            <div className={styles.welcomeBox}>
+                <h3>System Status: Online</h3>
+                <p>Google Wallet API is synced. All systems operational.</p>
             </div>
         </div>
     );

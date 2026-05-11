@@ -16,15 +16,11 @@
 
 .addCard h3 {
     margin-top: 0;
-    font-size: 1rem;
+    font-size: 14px;
     text-transform: uppercase;
+    letter-spacing: 1px;
     color: var(--miners-gray-dark);
-}
-
-.addCard p {
-    margin-top: 0;
-    font-size: 0.5rem;
-    color: var(--miners-gray-dark);
+    margin-bottom: 20px;
 }
 
 .formContent {
@@ -44,13 +40,6 @@
     border: 1px solid var(--miners-gray);
     border-radius: 8px;
     font-size: 15px;
-}
-
-.inputNumber:disabled {
-    background-color: var(--miners-gray);
-    color: var(--miners-gray);
-    cursor: not-allowed;
-    border-color: var(--miners-gray);
 }
 
 .inputNumber,
@@ -106,75 +95,47 @@
 }
 
 /* List Styles */
-.vouchersList {
-    display: flex;
-    flex-direction: column;
-    gap: 12px;
-}
-
-.voucherCard {
-    background-color: var(--color-white);
-    padding: 18px 25px;
-    border-radius: 10px;
+.branchCard {
+    background: white;
+    padding: 20px;
+    border-radius: 12px;
+    margin-bottom: 10px;
+    border-left: 4px solid var(--miners-orange);
     display: flex;
     justify-content: space-between;
-    align-items: center;
-    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.03);
-    border-left: 5px solid var(--miners-gray-dark);
     transition: transform 0.2s ease;
 }
 
-.voucherCard:hover {
+.branchCard:hover {
     transform: translateY(-4px);
 }
 
-.voucherInfo img {
-    width: 100px;
-    object-fit: cover;
-    border-radius: 5px;
+.locationPath {
+    font-size: 10px;
+    font-weight: 400;
+    color: #94a3b8;
+    text-transform: uppercase;
 }
 
-.voucherInfo {
-    font-weight: 400;
-    font-size: 16px;
+.arrow {
+    margin: 0 5px;
+    color: var(--miners-orange);
+    font-size: 1rem;
+}
+
+.branchTitle {
+    font-size: 18px;
+    font-weight: 700;
     text-transform: uppercase;
+    margin: 4px 0;
+}
+
+.addressText {
+    font-size: 13px;
+    color: #64748b;
     display: flex;
     align-items: center;
-    gap: 10px;
-}
-
-.voucherDesc{
-    display: flex;
-    flex-direction: column;
     gap: 5px;
-}
-
-.voucherDesc h3{
-    font-size: 16px;
-    font-weight: 400;
-}
-
-.voucherDesc p{
-    font-size: 14px;
-    font-weight: 200;
-    text-transform: none;
-}
-
-.voucherCost {
-    color: var(--miners-gray-dark);
-    font-weight: 400;
-    font-size: 12px;
-    text-transform: lowercase;
-}
-
-.crewTag {
-    background-color: var(--miners-red);
-    color: var(--color-white);
-    font-size: 1em;
-    width: fit-content;
-    padding: 2px 8px;
-    border-radius: 4px;
-    font-weight: 400;
 }
 
 .actions {
@@ -188,6 +149,7 @@
     border: none;
     cursor: pointer;
     padding: 8px;
+    height: fit-content;
     border-radius: 50%;
     transition: background 0.2s;
     display: flex;

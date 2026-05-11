@@ -33,6 +33,28 @@
 
 :root {
     font-family: 'TheMinersFont', system-ui, Arial, sans-serif;
+
+    /* Primary Brand Colors */
+        --color-black: #000000;
+        --color-white: #FFFFFF;
+    
+        --miners-yellow: #ffef3e;
+        --miners-gold: #febe33;
+        --miners-orange: #ff6c2f;
+        --miners-pink-light: #ffb0be;
+        --miners-magenta: #df1f66;
+        --miners-red: #d60f30;
+        --miners-blue-light: #cbf4ff;
+        --miners-blue-cyan: #00c2f8;
+        --miners-lime: #e5f94f;
+        --miners-green: #8dd762;
+        --miners-gray: #d3cbc3;
+        --miners-gray-dark: #222;
+    
+        /* Semantic UI Colors */
+        --color-background: var(--color-black);
+        --color-text-main: var(--color-white);
+        --color-accent: var(--miners-yellow);
 }
 
 body {

@@ -9,7 +9,7 @@ import googleWalletBtn from "/public/add-to-google-wallet.svg";
 const Profile = ({ email }) => {
     const [user, setUser] = useState(null);
     const [googleWalletUrl, setGoogleWalletUrl] = useState(null);
-    const [myVouchers, setMyVouchers] = useState([]); // Initialize as empty array
+    const [myVouchers, setMyVouchers] = useState([]);
     const [redeemingVoucher, setRedeemingVoucher] = useState(null);
     const [showShop, setShowShop] = useState(false);
 
@@ -108,29 +108,6 @@ const Profile = ({ email }) => {
                         </div>
                     </div>
 
-                    {/* VOUCHERS SECTION */}
-                    <div className={styles.vouchersSection}>
-                        <h3 className={styles.inventoryTitle}>MY VOUCHERS</h3>
-                        {myVouchers.length > 0 ? (
-                            <div className={styles.voucherList}>
-                                {myVouchers.map(v => (
-                                    <button
-                                        key={v.id}
-                                        className={styles.voucherButton}
-                                        onClick={() => setRedeemingVoucher(v)}
-                                    >
-                                        <div className={styles.vButtonContent}>
-                                            <span>{v.title}</span>
-                                            <small>TAP TO USE</small>
-                                        </div>
-                                    </button>
-                                ))}
-                            </div>
-                        ) : (
-                            <p className={styles.emptyText}>No active vouchers yet.</p>
-                        )}
-                    </div>
-
                     {/* GOOGLE WALLET BUTTON */}
                     {googleWalletUrl && (
                         <div className={styles.walletButtonContainer}>
@@ -143,6 +120,30 @@ const Profile = ({ email }) => {
                             </a>
                         </div>
                     )}
+
+                    {/* VOUCHERS SECTION */}
+                    <div className={styles.vouchersSection}>
+                        <p className={styles.inventoryTitle}>My vouchers</p>
+                        {myVouchers.length > 0 ? (
+                                <div className={styles.voucherList}>
+                                    {myVouchers.map(v => (
+                                        <button
+                                            key={v.id}
+                                            className={styles.voucherButton}
+                                            onClick={() => setRedeemingVoucher(v)}
+                                        >
+                                            <div className={styles.vButtonContent}>
+                                                <span>{v.title}</span>
+                                                <small>TAP TO USE</small>
+                                            </div>
+                                            {/* Optional: Add a chevron icon from lucide-react here if you want */}
+                                        </button>
+                                    ))}
+                                </div>
+                        ) : (
+                            <p className={styles.emptyText}>No active vouchers yet.</p>
+                        )}
+                    </div>
                 </div>
             )}
 

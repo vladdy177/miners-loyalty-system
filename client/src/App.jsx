@@ -122,7 +122,7 @@ function CustomerFlow({ userEmail, setUserEmail }) {
 const logoutButtonStyle = {
   width: '200px', background: 'none', border: '1px solid #444', color: '#ff4444',
   padding: '10px', borderRadius: '6px', cursor: 'pointer', display: 'flex',
-  alignItems: 'center', justifyContent: 'center', gap: '10px', marginTop: '20px'
+  alignItems: 'center', justifyContent: 'center', gap: '10px', marginBottom: '30px'
 };
 
 const inputStyle = {

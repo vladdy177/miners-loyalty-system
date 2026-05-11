@@ -1,0 +1,59 @@
+.statsGrid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 30px;
+    padding-bottom: 40px;
+}
+
+.card {
+    background: white;
+    padding: 25px;
+    border-radius: 16px;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+    color: #000;
+}
+
+.card h3 {
+    margin-top: 0;
+    margin-bottom: 20px;
+    font-size: 16px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.chartContainer {
+    width: 100%;
+    max-width: 300px;
+    margin: 0 auto;
+}
+
+.branchList {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.branchItem {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding-bottom: 8px;
+    border-bottom: 1px solid #f1f5f9;
+}
+
+.branchItem span {
+    font-weight: 600;
+    font-size: 14px;
+}
+
+.branchItem strong {
+    color: var(--miners-orange);
+}
+
+.hint {
+    font-size: 12px;
+    margin-top: 15px;
+    color: #64748b;
+    line-height: 1.4;
+}

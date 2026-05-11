@@ -7,9 +7,9 @@
 
 .sidebar {
     width: 250px;
-    background-color: #000;
+    background-color: var(--color-black);
     /* Black like the brand */
-    color: white;
+    color: var(--color-white);
     display: flex;
     flex-direction: column;
     padding: 30px 15px;
@@ -26,8 +26,7 @@
 }
 
 .brand span {
-    color: #ef1ab6;
-    /* Yellow highlight */
+    color: var(--miners-lime);
 }
 
 .nav {
@@ -50,23 +49,23 @@
     text-align: left;
     transition: 0.2s;
     background: transparent;
-    color: #888;
+    color: var(--miners-gray);
 }
 
 .navItem:hover {
-    color: #fff;
-    background-color: #222;
+    color: var(--color-white);
+    background-color: var(--miners-gray-dark);
 }
 
 .navItemActive {
-    background-color: #FFEA00;
-    color: #000;
+    background-color:var(--miners-lime);
+    color: var(--color-black);
 }
 
 .exitBtn {
     background: none;
-    border: 1px solid #444;
-    color: #ff4444;
+    border: 1px solid var(--miners-red);
+    color: var(--miners-red);
     padding: 10px;
     border-radius: 6px;
     cursor: pointer;

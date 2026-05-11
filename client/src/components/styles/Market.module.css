@@ -29,70 +29,90 @@
 }
 
 .rewardCard {
-    background-color: #FFEA00;
+    background-color: var(--miners-blue-light);
     /* Standard Yellow */
     border-radius: 4px;
     overflow: hidden;
     color: black;
     box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+    width: 400px;
 }
 
 /* Make Tier Upgrades look different (Orange like in your photo) */
 .rewardCard:nth-child(even) {
-    background-color: #FF9100;
+    background-color: var(--miners-pink-light);
+}
+
+/* Container for the image */
+.imageWrapper {
+    width: 100%;
+    height: 150px; /* Fixed height for consistency */
+    overflow: hidden;
+    background-color: #222; /* Placeholder color while loading */
+}
+
+/* The actual image */
+.imageWrapper img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover; /* This makes the image fill the area without stretching */
+    display: block;
+    transition: transform 0.3s ease;
 }
 
 .progressHeader {
-    padding: 15px 15px 5px 15px;
-    background-color: rgba(0, 0, 0, 0.05);
+    padding: 10px 15px 5px 15px;
+    background-color: rgba(0, 0, 0, 0.1);
 }
 
 .progressInfo {
-    font-size: 14px;
-    font-weight: 200;
+    font-size: 1rem;
+    font-weight: 700;
     margin-bottom: 8px;
 }
 
 .progressBar {
     height: 8px;
-    background-color: rgba(0, 0, 0, 0.1);
+    background-color: rgba(0, 0, 0, 0.2);
     width: 100%;
+    margin-bottom: 10px;
+    border-radius: 2px;
 }
 
 .progressFill {
     height: 100%;
-    background-color: black;
+    background-color: var(--color-black);
+    border-radius: 2px;
     transition: width 1s ease-out;
 }
 
 .cardContent {
-    padding: 20px 15px;
+    padding: 10px 15px;
     display: flex;
     flex-direction: column;
 }
 
 .rewardTitle {
-    font-size: 36px;
-    margin: 0;
-    font-weight: 200;
+    font-size: 1.25rem;
+    margin-bottom: 5px;
+    font-weight: 400;
     text-transform: uppercase;
 }
 
 .rewardDesc {
     font-size: 1rem;
-    margin: 8px 0 20px 0;
-    line-height: 1.4;
+    margin-bottom: 20px;
     font-weight: 200;
     opacity: 0.8;
 }
 
 .buyBtn {
     align-self: flex-end;
-    background-color: #00B0FF;
-    /* Bright blue button */
+    background-color: var(--miners-blue-cyan);
     color: black;
     border: none;
-    padding: 10px 25px;
+    border-radius: 2px;
+    padding: 5px 10px;
     cursor: pointer;
     text-transform: uppercase;
     border-radius: 2px;
@@ -103,7 +123,8 @@
     background-color: rgba(0, 0, 0, 0.2);
     color: rgba(0, 0, 0, 0.4);
     border: none;
-    padding: 10px 25px;
+    border-radius: 2px;
+    padding: 5px 10px;
     text-transform: uppercase;
     cursor: not-allowed;
 }

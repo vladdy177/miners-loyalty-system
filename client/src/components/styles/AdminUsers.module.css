@@ -5,8 +5,58 @@
     max-width: 1000px;
 }
 
+/* Панель инструментов: Поиск + 3 Фильтра */
+.toolbar {
+    display: flex;
+    gap: 15px;
+    background:var(--color-white);
+    padding: 20px;
+    border-radius: 12px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+    margin-bottom: 25px;
+    align-items: center;
+    flex-wrap: wrap;
+}
+
+.searchField {
+    flex: 2;
+    min-width: 200px;
+    padding: 10px 15px;
+    border: 1px solid var(--miners-gray);
+    border-radius: 8px;
+    font-size: 14px;
+    outline: none;
+}
+
+.toolbar select {
+    flex: 1;
+    min-width: 150px;
+    padding: 10px;
+    border: 1px solid var(--miners-gray);
+    border-radius: 8px;
+    background-color: #fff;
+    font-size: 14px;
+    cursor: pointer;
+}
+
+.toolbar select:disabled {
+    background-color: var(--miners-gray);
+    color: var(--miners-gray-dark);
+    cursor: not-allowed;
+}
+
+.resultsCount {
+    font-size: 12px;
+    font-weight: 700;
+    color: var(--miners-gray-dark);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin-bottom: 15px;
+    padding-left: 5px;
+}
+
 .userCard {
-    background-color: #ffffff;
+    background-color: var(--color-white);
     border-radius: 12px;
     padding: 20px 25px;
     display: flex;
@@ -21,21 +71,31 @@
 }
 
 .userInfo {
-    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
 }
 
 .userName {
     font-weight: 400;
     font-size: 1rem;
-    color: #1a1a1a;
+    color: var(--color-black);
     text-transform: uppercase;
 }
 
+.branchTag,
 .userEmail {
-    color: #666;
-    margin-top: 5px;
-    font-size: 14px;
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
     font-weight: 200;
+    background: #f1f5f9;
+    padding: 4px 10px;
+    border-radius: 6px;
+    font-size: 13px;
+    color: var(--miners-gray-dark);
+    margin-top: 5px;
+    width: max-content;
 }
 
 /* Display Mode Styles */
@@ -53,7 +113,7 @@
     display: block;
     font-size: 10px;
     font-weight: 200;
-    color: #999;
+    color: var(--miners-gray-dark);
 }
 
 .value {
@@ -67,23 +127,28 @@
     font-size: 1rem;
     text-transform: uppercase;
     font-weight: 200;
-    color: #000;
+    color: var(--color-black);
     width: 110px;
     text-align: center;
+    background-color: var(--miners-grey-dark);
+}
+
+.isCrew {
+    background-color: var(--miners-red);
 }
 
 .editBtn {
     background: none;
     border: none;
-    color: #3182ce;
+    color: var(--miners-blue-cyan);
     cursor: pointer;
-    padding: 8px;
+    padding: 8px 9px;
     border-radius: 50%;
     transition: background 0.2s;
 }
 
 .editBtn:hover {
-    background-color: #ebf8ff;
+    background-color: var(--miners-blue-light);
 }
 
 /* Edit Mode Styles */
@@ -96,16 +161,16 @@
 .inputPoints {
     width: 90px;
     padding: 8px;
-    border: 1px solid #e2e8f0;
+    border: 1px solid var(--miners-gray-dark);
     border-radius: 6px;
     font-weight: 200;
 }
 
 .selectTier {
     padding: 8px;
-    border: 1px solid #e2e8f0;
+    border: 1px solid var(--miners-gray-dark);
     border-radius: 6px;
-    background-color: white;
+    background-color: var(--color-white);
     font-weight: 200;
 }
 
@@ -121,11 +186,11 @@
 }
 
 .saveBtn {
-    background-color: #e6fffa;
-    color: #2c7a7b;
+    background-color: var(--miners-green);
+    color: var(--color-white);
 }
 
 .cancelBtn {
-    background-color: #fff5f5;
-    color: #c53030;
+    background-color: var(--miners-red);
+    color: var(--color-white);
 }

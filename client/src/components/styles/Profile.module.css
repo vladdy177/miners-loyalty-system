@@ -1,13 +1,13 @@
-.container {
-    max-width: 400px;
-    margin: 20px auto;
-    padding: 20px;
+.container, .profilePage {
+    width: 100%;
+    margin: 10px 0;
+    padding: 10px;
     font-family: 'TheMinersFont', sans-serif;
 }
 
 .card {
-    background-color: #000000;
-    color: #ffffff;
+    background-color: var(--color-black);
+    color: var(--miners-gray);
     border-radius: 15px;
     padding: 30px;
     text-align: center;
@@ -18,7 +18,7 @@
     font-size: 12px;
     letter-spacing: 3px;
     text-transform: uppercase;
-    color: #888888;
+    color: var(--miners-gray);
     margin-bottom: 20px;
 }
 
@@ -67,12 +67,6 @@
     /* Золотой акцент для баллов */
 }
 
-.profilePage {
-    max-width: 450px;
-    margin: 0 auto;
-    padding-bottom: 50px;
-}
-
 .tabs {
     display: flex;
     justify-content: center;
@@ -99,43 +93,85 @@
     margin-top: 20px;
 }
 
-.inventorySection {
-    margin-top: 30px;
+/* Container for the whole section */
+.vouchersSection {
+    margin-top: 40px;
     padding: 0 20px;
+    width: 100%;
 }
 
+/* "My Vouchers" Heading */
 .inventoryTitle {
-    font-weight: 900;
-    font-size: 14px;
-    color: #888;
-    letter-spacing: 1px;
-    margin-bottom: 15px;
-}
-
-.miniVoucher {
-    background-color: #222;
-    border-radius: 8px;
-    padding: 15px;
-    cursor: pointer;
-    border-left: 4px solid #FFEA00;
-    margin-bottom: 10px;
-}
-
-.vLabel {
-    font-size: 9px;
-    font-weight: 900;
-    color: #FFEA00;
-}
-
-.vTitle {
-    font-weight: 700;
-    font-size: 16px;
-    color: white;
-    margin: 3px 0;
-}
-
-.vTap {
-    font-size: 10px;
+    font-size: 1rem;
+    font-weight: 300;
+    text-align: center;
+    text-transform: uppercase;
+    letter-spacing: 2px;
     color: #666;
-    font-weight: bold;
+    /* Muted gray for the label */
+    margin-bottom: 15px;
+    border-bottom: 1px solid #666;
+    padding-bottom: 8px;
+}
+
+/* List wrapper */
+.voucherList {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+/* The individual Voucher Card (Button) */
+.voucherButton {
+    background-color: var(--color-black);
+    /* Very dark gray, slightly off-black */
+    border: none;
+    border-left: 4px solid #FFEA00;
+    /* Branding yellow accent */
+    border-radius: 4px;
+    padding: 18px 20px;
+    color: white;
+    cursor: pointer;
+    transition: transform 0.1s ease, background-color 0.2s ease;
+    text-align: left;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.voucherButton:active {
+    transform: scale(0.98);
+    background-color: #222;
+}
+
+/* Layout inside the button */
+.vButtonContent {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+/* Voucher Name */
+.vButtonContent span {
+    font-size: 1rem;
+    font-weight: 200;
+    text-transform: uppercase;
+}
+
+/* "TAP TO USE" text */
+.vButtonContent small {
+    font-size: 10px;
+    font-weight: 400;
+    color: #FFEA00;
+    /* Yellow to draw attention */
+    letter-spacing: 1px;
+}
+
+/* Style for empty state */
+.emptyText {
+    color: #444;
+    font-size: 14px;
+    text-align: center;
+    margin-top: 20px;
+    font-style: italic;
 }

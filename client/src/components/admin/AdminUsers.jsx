@@ -1,36 +1,59 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
-import { Pencil, Save, X } from "lucide-react";
+import { Pencil, Save, X, Search, Filter, MapPin, Mail } from "lucide-react";
 import styles from "../styles/AdminUsers.module.css";
 
 const AdminUsers = () => {
     const [users, setUsers] = useState([]);
+    const [branches, setBranches] = useState([]);
     const [editingId, setEditingId] = useState(null);
     const [editData, setEditData] = useState({ points: 0, tier: "" });
-    const [refreshTrigger, setRefreshTrigger] = useState(0); // Trigger for re-fetching
-
+    // FILTERING
+    const [searchTerm, setSearchTerm] = useState("");
+    const [filterCountry, setFilterCountry] = useState("all");
+    const [filterCity, setFilterCity] = useState("all");
+    const [filterBranch, setFilterBranch] = useState("all");
+    // REFRESH TRIGGER
+    const [refreshTrigger, setRefreshTrigger] = useState(0);
     const apiUrl = import.meta.env.VITE_API_URL;
 
-    // 1. Fetch effect
     useEffect(() => {
         const controller = new AbortController();
-
-        const fetchUsers = async () => {
+        const fetchData = async () => {
             try {
-                const res = await axios.get(`${apiUrl}/api/admin/users`, {
-                    signal: controller.signal
-                });
-                setUsers(res.data);
-            } catch (err) {
-                if (err.name !== 'CanceledError') console.error("Fetch error", err);
-            }
+                const [uRes, bRes] = await Promise.all([
+                    axios.get(`${apiUrl}/api/admin/users`, { signal: controller.signal }),
+                    axios.get(`${apiUrl}/api/branches`, { signal: controller.signal })
+                ]);
+                setUsers(uRes.data);
+                setBranches(bRes.data);
+            } catch (err) { if (err.name !== 'CanceledError') console.error(err); }
         };
-
-        fetchUsers();
+        fetchData();
         return () => controller.abort();
-    }, [apiUrl, refreshTrigger]); // Only re-runs when URL changes or we manually trigger it
+    }, [apiUrl, refreshTrigger]);
 
-    // 2. Actions
+
+    // 1. Extract Unique lists for filters
+    const countries = [...new Set(branches.map(b => b.country))];
+    const cities = [...new Set(branches.filter(b => filterCountry === "all" || b.country === filterCountry).map(b => b.city))];
+    const branchList = branches.filter(b => filterCity === "all" || b.city === filterCity);
+
+    // 2. THE FILTERING LOGIC
+    const filteredUsers = users.filter(user => {
+        const matchesSearch = (user.first_name + " " + user.last_name + user.email).toLowerCase().includes(searchTerm.toLowerCase());
+
+        // Find the branch object for this user to get its city/country
+        const userBranchObj = branches.find(b => b.name === user.home_branch);
+
+        const matchesCountry = filterCountry === "all" || userBranchObj?.country === filterCountry;
+        const matchesCity = filterCity === "all" || userBranchObj?.city === filterCity;
+        const matchesBranch = filterBranch === "all" || user.home_branch === filterBranch;
+
+        return matchesSearch && matchesCountry && matchesCity && matchesBranch;
+    });
+
+    // USER POINTS AND TIER EDIT
     const handleSave = async (userId) => {
         try {
             await axios.post(`${apiUrl}/api/admin/update-user`, {
@@ -52,11 +75,38 @@ const AdminUsers = () => {
 
     return (
         <div className={styles.listContainer}>
-            {users.map(user => (
+            <div className={styles.toolbar}>
+                {/* Search */}
+                <input placeholder="Search..." value={searchTerm} onChange={e => setSearchTerm(e.target.value)} className={styles.searchField} />
+
+                {/* Hierarchical Dropdowns */}
+                <select value={filterCountry} onChange={e => { setFilterCountry(e.target.value); setFilterCity("all"); setFilterBranch("all"); }}>
+                    <option value="all">All Countries</option>
+                    {countries.map(c => <option key={c} value={c}>{c}</option>)}
+                </select>
+
+                <select disabled={filterCountry === "all"} value={filterCity} onChange={e => { setFilterCity(e.target.value); setFilterBranch("all"); }}>
+                    <option value="all">All Cities</option>
+                    {cities.map(c => <option key={c} value={c}>{c}</option>)}
+                </select>
+
+                <select disabled={filterCity === "all"} value={filterBranch} onChange={e => setFilterBranch(e.target.value)}>
+                    <option value="all">All Branches</option>
+                    {branchList.map(b => <option key={b.id} value={b.name}>{b.name}</option>)}
+                </select>
+            </div>
+
+            {/* List Header/Stats */}
+            <p className={styles.resultsCount}>Showing {filteredUsers.length} customers</p>
+
+            {filteredUsers.map(user => (
                 <div key={user.id} className={styles.userCard}>
                     <div className={styles.userInfo}>
                         <div className={styles.userName}>{user.first_name} {user.last_name}</div>
-                        <div className={styles.userEmail}>{user.email}</div>
+                        <div className={styles.userEmail}><Mail size={12} />{user.email}</div>
+                        <div className={styles.branchTag}>
+                            <MapPin size={12} /> {user.home_branch}
+                        </div>
                     </div>
 
                     {editingId === user.id ? (
@@ -77,8 +127,8 @@ const AdminUsers = () => {
                                 <option value="GOLD">GOLD</option>
                                 <option value="CREW">CREW</option>
                             </select>
-                            <button onClick={() => handleSave(user.id)} className={styles.saveBtn}><Save size={16} /></button>
-                            <button onClick={() => setEditingId(null)} className={styles.cancelBtn}><X size={16} /></button>
+                            <button onClick={() => handleSave(user.id)} className={styles.saveBtn}><Save size={18} /></button>
+                            <button onClick={() => setEditingId(null)} className={styles.cancelBtn}><X size={18} /></button>
                         </div>
                     ) : (
                         <div className={styles.displayInfo}>
@@ -88,7 +138,7 @@ const AdminUsers = () => {
                             </div>
                             <div
                                 className={styles.tierBadge}
-                                style={{ background: user.tier === 'CREW' ? '#FFEA00' : '#eee' }}
+                                style={{ background: user.tier === 'CREW' ? 'var(--miners-yellow)' : 'var(--miners-gray)' }}
                             >
                                 {user.tier}
                             </div>

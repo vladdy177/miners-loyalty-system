@@ -29,7 +29,7 @@ const CLASS_ID = 'TheMinersLoyalty';
 
 const buildLoyaltyObject = (user, activeVouchers = []) => {
     const tier = getTierData(user.points_balance, user.tier);
-    const fullName = `${(user.first_name || 'MEMBER').toUpperCase()} ${(user.last_name || '').toUpperCase()}`;
+    const fullName = `${(user.first_name || 'MEMBER')} ${(user.last_name || '')}`;
     const baseUrl = process.env.NODE_ENV === 'production'
         ? 'https://miners-loyalty-system-1.onrender.com'
         : 'http://localhost:5173';
@@ -38,6 +38,8 @@ const buildLoyaltyObject = (user, activeVouchers = []) => {
         ? activeVouchers.map(v => `- ${v.title}`).join('\n')
         : "No active vouchers";
 
+    const branchName = user.home_branch ? `${user.home_branch}` : "The Miners Coffee Club";
+
     return {
         id: `${ISSUER_ID}.${user.qr_code_token}`,
         classId: `${ISSUER_ID}.${CLASS_ID}`,
@@ -45,14 +47,14 @@ const buildLoyaltyObject = (user, activeVouchers = []) => {
         accountHolderName: fullName,
         accountId: user.qr_code_token,
         secondaryLoyaltyPoints: {
-            label: "Member name",
+            label: "Points",
             balance: {
                 string: fullName
             }
         },
         barcode: { type: 'QR_CODE', value: user.qr_code_token, alternateText: user.qr_code_token },
         heroImage: { sourceUri: { uri: `${baseUrl}/banners/${tier.banner}` } },
-        loyaltyPoints: { label: 'Points', balance: { string: String(user.points_balance) } },
+        loyaltyPoints: { label: 'Member name', balance: { string: String(user.points_balance) } },
         linksModuleData: {
             uris: [{
                 uri: `${baseUrl}/?email=${user.email}`,
@@ -61,9 +63,10 @@ const buildLoyaltyObject = (user, activeVouchers = []) => {
             }]
         },
         textModulesData: [
-            { header: 'My vouchers', body: voucherList, id: 'vouchers_list' },
+            { header: 'Favorite branch', body: branchName, id: 'branch' },
             { header: 'Benefits', body: tier.benefits, id: 'benefits' },
-            { header: 'Next tier', body: tier.nextTierText, id: 'progress' }
+            { header: 'Next tier', body: tier.nextTierText, id: 'progress' },
+            { header: 'My vouchers', body: voucherList, id: 'vouchers_list' }
         ]
     };
 };
@@ -112,9 +115,10 @@ const syncWallet = async (user, activeVouchers = []) => {
 const triggerFullSync = async (email) => {
     try {
         const userRes = await db.query(`
-            SELECT u.email, u.first_name, u.last_name, lc.points_balance, lc.tier, lc.qr_code_token, u.id as user_uuid
-            FROM users u 
-            JOIN loyalty_cards lc ON u.id = lc.user_id 
+            SELECT u.email, u.first_name, u.last_name, lc.points_balance, lc.tier, lc.qr_code_token, b.name as home_branch, u.id as user_uuid
+            FROM users u
+            JOIN loyalty_cards lc ON u.id = lc.user_id
+            JOIN branches b ON u.home_branch_id = b.id
             WHERE u.email = $1`, [email]);
 
         if (userRes.rows.length === 0) return;
