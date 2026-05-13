@@ -11,6 +11,7 @@
     border-radius: 16px;
     box-shadow: 0 4px 15px rgba(0,0,0,0.05);
     color: #000;
+    animation: fadeInSlide 1s ease-out both;
 }
 
 .card h3 {
@@ -56,4 +57,22 @@
     margin-top: 15px;
     color: #64748b;
     line-height: 1.4;
+}
+
+@media (max-width: 700px) {
+    .statsGrid {
+        grid-template-columns: 1fr;
+    }
+}
+
+@keyframes fadeInSlide {
+    from {
+        opacity: 0;
+        transform: translateY(15px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
 }

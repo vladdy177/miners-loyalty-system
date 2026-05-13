@@ -1,5 +1,8 @@
 .container {
-    max-width: 1000px;
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    gap: 30px;
 }
 
 .addCard {
@@ -8,6 +11,7 @@
     border-radius: 12px;
     margin-bottom: 40px;
     box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
+    animation: fadeInSlide 1s ease-out forwards;
 }
 
 .addCard h1 {
@@ -32,6 +36,7 @@
 .inputGroup {
     display: flex;
     gap: 15px;
+    flex-wrap: wrap;
 }
 
 .inputMain {
@@ -40,6 +45,8 @@
     border: 1px solid var(--miners-gray);
     border-radius: 8px;
     font-size: 15px;
+    display: flex;
+    flex-direction: column;
 }
 
 .inputNumber,
@@ -63,38 +70,41 @@
 
 .formActions {
     display: flex;
-    gap: 10px;
     justify-content: flex-end;
+    gap: 12px;
     margin-top: 10px;
 }
 
 .submitBtn {
-    background-color: var(--color-black);
-    color: var(--color-white);
+    background: var(--color-black);
+    color: #fff;
     border: none;
-    padding: 12px 25px;
+    padding: 14px 30px;
     border-radius: 8px;
+    font-weight: 400;
+    cursor: pointer;
     display: flex;
     align-items: center;
     gap: 10px;
-    font-weight: 200;
-    cursor: pointer;
 }
 
 .cancelBtn {
-    background-color: var(--miners-gray);
-    color: var(--miners-gray-dark);
+    background: var(--color-black);
+    color: #fff;
     border: none;
-    width: 45px;
-    height: 45px;
+    padding: 14px 30px;
     border-radius: 8px;
+    cursor: pointer;
     display: flex;
     align-items: center;
-    justify-content: center;
-    cursor: pointer;
 }
 
 /* List Styles */
+.branchlist {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(450px, 1fr));
+    gap: 20px;
+}
 .branchCard {
     background: white;
     padding: 20px;
@@ -104,10 +114,18 @@
     display: flex;
     justify-content: space-between;
     transition: transform 0.2s ease;
+    animation: fadeInSlide 0.8s ease-out both;
+    animation-delay: 0.4s;
+    align-items: center;
 }
 
 .branchCard:hover {
     transform: translateY(-4px);
+}
+
+.branchInfo {
+    flex: 1;
+    min-width: 0;
 }
 
 .locationPath {
@@ -140,7 +158,9 @@
 
 .actions {
     display: flex;
+    flex-direction: column;
     gap: 10px;
+    margin-left: 20px;
 }
 
 .deleteBtn,
@@ -153,6 +173,8 @@
     border-radius: 50%;
     transition: background 0.2s;
     display: flex;
+    align-items: center;
+    justify-content: center;
 }
 
 .editBtn {
@@ -169,4 +191,44 @@
 
 .editBtn:hover {
     background-color: var(--miners-blue-light);
+}
+
+@keyframes fadeInSlide {
+    from {
+        opacity: 0;
+        transform: translateY(15px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* --- Mobile & Tablet --- */
+@media (max-width: 700px) {
+    .branchList {
+        grid-template-columns: 1fr;
+        /* На мобилках строго в один ряд */
+    }
+
+    .inputGroup {
+        flex-direction: column;
+    }
+
+    .branchCard {
+        flex-direction: column;
+        align-items: flex-start;
+        padding: 20px;
+    }
+
+    .actions {
+        flex-direction: row;
+        margin-left: 0;
+        margin-top: 15px;
+        width: 100%;
+        justify-content: flex-end;
+        border-top: 1px solid #f1f5f9;
+        padding-top: 15px;
+    }
 }

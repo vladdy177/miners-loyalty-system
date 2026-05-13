@@ -1,27 +1,41 @@
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useState, useEffect, useCallback, useMemo } from "react";
 import axios from "axios";
 import { QRCodeSVG } from "qrcode.react";
+import { LogOut, History, Ticket } from "lucide-react";
 import Market from "./Market";
 import VoucherRedeem from "./VoucherRedeem";
+import getTierData from "../utils/tierLogic.js"
 import styles from "./styles/Profile.module.css";
-import googleWalletBtn from "/public/add-to-google-wallet.svg";
 
-const Profile = ({ email }) => {
+const Profile = ({ email, onLogout }) => {
     const [user, setUser] = useState(null);
     const [googleWalletUrl, setGoogleWalletUrl] = useState(null);
     const [myVouchers, setMyVouchers] = useState([]);
     const [redeemingVoucher, setRedeemingVoucher] = useState(null);
     const [showShop, setShowShop] = useState(false);
 
-    const [refreshTrigger, setRefreshTrigger] = useState(0);
+    const [activeTimers, setActiveTimers] = useState(() => {
+        const saved = localStorage.getItem("miners_timers");
+        return saved ? JSON.parse(saved) : {};
+    });
 
+    const [now, setNow] = useState(() => Date.now());
+    const [refreshTrigger, setRefreshTrigger] = useState(0);
     const apiUrl = import.meta.env.VITE_API_URL;
 
     const triggerRefresh = useCallback(() => {
         setRefreshTrigger(prev => prev + 1);
     }, []);
 
-    // 2. Initial load
+    // Функция форматирования времени (ММ:СС)
+    const formatTimeLeft = (expiry) => {
+        const totalSeconds = Math.max(0, Math.floor((expiry - now) / 1000));
+        const m = Math.floor(totalSeconds / 60);
+        const s = totalSeconds % 60;
+        return `${m}:${s.toString().padStart(2, '0')}`;
+    };
+
+    // Загрузка данных
     useEffect(() => {
         let isMounted = true;
         const controller = new AbortController();
@@ -40,117 +54,184 @@ const Profile = ({ email }) => {
                     setMyVouchers(vRes.data);
                 }
             } catch (err) {
-                if (err.name !== 'CanceledError') {
-                    console.error("Failed to fetch user data", err);
+                if (err.name !== 'CanceledError') console.error(err);
+            }
+        };
+        loadData();
+        return () => { isMounted = false; controller.abort(); };
+    }, [email, refreshTrigger, apiUrl]);
+
+    // Сердцебиение таймера
+    useEffect(() => {
+        const interval = setInterval(() => setNow(Date.now()), 1000);
+        return () => clearInterval(interval);
+    }, []);
+
+    // Автоматическое гашение ваучера по истечении времени
+    useEffect(() => {
+        const checkExpiry = async () => {
+            for (const [id, expiry] of Object.entries(activeTimers)) {
+                if (now >= expiry) {
+                    try {
+                        await axios.post(`${apiUrl}/api/users/redeem-voucher`, { voucherId: id });
+                        setActiveTimers(prev => {
+                            const updated = { ...prev };
+                            delete updated[id];
+                            return updated;
+                        });
+                        if (redeemingVoucher?.id === id) setRedeemingVoucher(null);
+                        triggerRefresh();
+                    } catch (e) { console.error("Auto-redeem failed", e); }
                 }
             }
         };
+        checkExpiry();
+    }, [now, activeTimers, apiUrl, triggerRefresh, redeemingVoucher]);
 
-        loadData();
+    // Сохранение таймеров
+    useEffect(() => {
+        localStorage.setItem("miners_timers", JSON.stringify(activeTimers));
+    }, [activeTimers]);
 
-        return () => {
-            isMounted = false;
-            controller.abort();
-        };
-    }, [email, refreshTrigger, apiUrl]); // Dependencies are now simple values, not functions
+    const handleActivate = (voucherId) => {
+        const expiry = now + 3 * 60 * 1000;
+        setActiveTimers(prev => ({ ...prev, [voucherId]: expiry }));
+    };
+
+    // Группировка ваучеров для чистоты кода
+    const activeRewards = useMemo(() => myVouchers.filter(v => v.status === 'active'), [myVouchers]);
+    const usedRewards = useMemo(() => myVouchers.filter(v => v.status === 'used'), [myVouchers]);
 
     if (!user) return <p className={styles.loading}>Loading card...</p>;
 
     return (
         <div className={styles.profilePage}>
-            <div className={styles.tabs}>
-                <button
-                    className={!showShop ? styles.activeTab : styles.tab}
-                    onClick={() => setShowShop(false)}
-                >
-                    MY CARD
-                </button>
-                <button
-                    className={showShop ? styles.activeTab : styles.tab}
-                    onClick={() => setShowShop(true)}
-                >
-                    SHOP
-                </button>
-            </div>
+            <div className={styles.splitLayout}>
 
-            {showShop ? (
-                <Market
-                    userEmail={email}
-                    userPoints={user.points_balance}
-                    userTier={user.tier}
-                    onPurchaseSuccess={triggerRefresh} // Now refreshes vouchers too!
-                />
-            ) : (
-                <div className={styles.container}>
-                    {/* THE CARD */}
-                    <div className={styles.card}>
-                        <p className={styles.title}>Loyalty Member</p>
-                        <h1 className={styles.userName}>
-                            {user.first_name} {user.last_name}
-                        </h1>
-                        <p className={styles.branchName}>{user.home_branch}</p>
-
-                        <div className={styles.qrContainer}>
-                            <QRCodeSVG value={user.qr_code_token} size={160} />
-                        </div>
-
-                        <div className={styles.statsGrid}>
-                            <div>
-                                <p className={styles.statLabel}>Points</p>
-                                <p className={`${styles.statValue} ${styles.points}`}>
-                                    {user.points_balance}
-                                </p>
+                {/* ЛЕВАЯ ЧАСТЬ: ФИКСИРОВАННАЯ КАРТА */}
+                <div className={styles.leftSide}>
+                    <div className={styles.cardContainer}>
+                        <div className={styles.card}>
+                            <p className={styles.title}>Loyalty Member</p>
+                            <h1 className={styles.userName}>{user.first_name} {user.last_name}</h1>
+                            <p className={styles.branchName}>{user.home_branch}</p>
+                            <div className={styles.qrContainer}>
+                                <QRCodeSVG value={user.qr_code_token} size={150} />
                             </div>
-                            <div>
-                                <p className={styles.statLabel}>Tier</p>
-                                <p className={styles.statValue}>{user.tier}</p>
-                            </div>
-                        </div>
-                    </div>
-
-                    {/* GOOGLE WALLET BUTTON */}
-                    {googleWalletUrl && (
-                        <div className={styles.walletButtonContainer}>
-                            <a href={googleWalletUrl} target="_blank" rel="noreferrer">
-                                <img
-                                    src={googleWalletBtn}
-                                    alt="Save to Google Wallet"
-                                    style={{ width: '200px' }}
-                                />
-                            </a>
-                        </div>
-                    )}
-
-                    {/* VOUCHERS SECTION */}
-                    <div className={styles.vouchersSection}>
-                        <p className={styles.inventoryTitle}>My vouchers</p>
-                        {myVouchers.length > 0 ? (
-                                <div className={styles.voucherList}>
-                                    {myVouchers.map(v => (
-                                        <button
-                                            key={v.id}
-                                            className={styles.voucherButton}
-                                            onClick={() => setRedeemingVoucher(v)}
-                                        >
-                                            <div className={styles.vButtonContent}>
-                                                <span>{v.title}</span>
-                                                <small>TAP TO USE</small>
-                                            </div>
-                                            {/* Optional: Add a chevron icon from lucide-react here if you want */}
-                                        </button>
-                                    ))}
+                            <div className={styles.statsGrid}>
+                                {/* First row: points and tier */}
+                                <div className={styles.statBox}>
+                                    <p className={styles.statLabel}>Points</p>
+                                    <p className={`${styles.statValue} ${styles.points}`}>
+                                        {user.points_balance}
+                                    </p>
                                 </div>
-                        ) : (
-                            <p className={styles.emptyText}>No active vouchers yet.</p>
+
+                                <div className={styles.statBox}>
+                                    <p className={styles.statLabel}>Current Tier</p>
+                                    <p className={styles.statValue}>
+                                        {user.tier}
+                                    </p>
+                                </div>
+
+                                {/* Second row: Benefits*/}
+                                <div className={`${styles.statBox} ${styles.fullWidth}`}>
+                                    <p className={styles.statLabel}>Your Benefits</p>
+                                    <p className={styles.benefitsValue}>
+                                        {getTierData(user.points_balance, user.tier).benefits}
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                        {googleWalletUrl && (
+                            <div className={styles.walletButtonContainer}>
+                                <a href={googleWalletUrl} target="_blank" rel="noreferrer">
+                                    <img src="/add-to-google-wallet.svg" alt="Wallet" style={{ width: '180px' }} />
+                                </a>
+                            </div>
                         )}
+                        <button onClick={onLogout} className={styles.logoutBtn}><LogOut size={16} /> Log Out</button>
                     </div>
                 </div>
-            )}
 
-            {/* MODAL POPUP */}
+                {/* ПРАВАЯ ЧАСТЬ: КОНТЕНТ (ИНВЕНТАРЬ И МАГАЗИН) */}
+                <div className={styles.rightSide}>
+                    <div className={styles.tabs}>
+                        <button className={!showShop ? styles.activeTab : styles.tab} onClick={() => setShowShop(false)}>Inventory</button>
+                        <button className={showShop ? styles.activeTab : styles.tab} onClick={() => setShowShop(true)}>Shop</button>
+                    </div>
+
+                    {showShop ? (
+                        <Market userEmail={email} userPoints={user.points_balance} userTier={user.tier} onPurchaseSuccess={triggerRefresh} />
+                    ) : (
+                        <div className={styles.inventoryContainer}>
+
+                            {/* АКТИВНЫЕ ВАУЧЕРЫ */}
+                            <section className={styles.section}>
+                                <h3 className={styles.sectionTitle}><Ticket size={18} /> My active rewards</h3>
+                                {activeRewards.length > 0 ? (
+                                    <div className={styles.voucherGrid}>
+                                        {activeRewards.map(v => {
+                                            const expiryTime = activeTimers[v.id];
+                                            const isRunning = expiryTime && expiryTime > now;
+                                            return (
+                                                <div key={v.id} className={styles.vCard}>
+                                                    <div className={styles.vImageWrapper}>
+                                                        <img src={v.image_url || "/espresso.jpg"} alt="v" />
+                                                        {isRunning && (
+                                                            <div className={styles.timerOverlay}>
+                                                                <div className={styles.timerBox}>
+                                                                    <span>ACTIVE</span>
+                                                                    <h2>{formatTimeLeft(expiryTime)}</h2>
+                                                                </div>
+                                                            </div>
+                                                        )}
+                                                    </div>
+                                                    <div className={styles.vContent}>
+                                                        <div className={styles.vHeader}>
+                                                            <h4>{v.title}</h4>
+                                                            <span className={styles.vExpiry}>Exp: {new Date(v.expires_at).toLocaleDateString()}</span>
+                                                        </div>
+                                                        <p className={styles.vDescription}>{v.description}</p>
+                                                        <button
+                                                            className={isRunning ? styles.btnShow : styles.btnActivate}
+                                                            onClick={() => isRunning ? setRedeemingVoucher(v) : handleActivate(v.id)}
+                                                        >
+                                                            {isRunning ? "SHOW QR" : "ACTIVATE (3 MIN)"}
+                                                        </button>
+                                                    </div>
+                                                </div>
+                                            );
+                                        })}
+                                    </div>
+                                ) : <p className={styles.emptyText}>No active vouchers yet.</p>}
+                            </section>
+
+                            {/* ИСТОРИЯ ИСПОЛЬЗОВАННЫХ */}
+                            <section className={styles.section} style={{ marginTop: '40px' }}>
+                                <h3 className={styles.sectionTitle}><History size={18} /> Used Vouchers</h3>
+                                <div className={styles.historyList}>
+                                    {usedRewards.map(v => (
+                                        <div key={v.id} className={styles.historyItem}>
+                                            <span>{v.title}</span>
+                                            <small>{new Date(v.redeemed_at).toLocaleString('cs-CZ', 'short')}</small>
+                                        </div>
+                                    ))}
+                                    {usedRewards.length === 0 && <p className={styles.emptyText}>History is empty.</p>}
+                                </div>
+                            </section>
+
+                        </div>
+                    )}
+                </div>
+            </div>
+
+            {/* MODAL */}
             {redeemingVoucher && (
                 <VoucherRedeem
                     voucher={redeemingVoucher}
+                    expiryTime={activeTimers[redeemingVoucher.id]}
+                    currentTime={now}
                     onCancel={() => setRedeemingVoucher(null)}
                 />
             )}

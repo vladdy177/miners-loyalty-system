@@ -2,6 +2,7 @@ const express = require('express');
 const router = express.Router();
 const db = require('../config/db');
 const { generateGoogleWalletLink } = require('../walletService');
+const { triggerFullSync } = require('../walletService');
 
 // Registration (POST /api/users/register)
 router.post('/register', async (req, res) => {
@@ -56,17 +57,45 @@ router.get('/profile/:email', async (req, res) => {
 router.get('/my-vouchers/:email', async (req, res) => {
     try {
         const query = `
-            SELECT uv.id, vt.title, vt.description, uv.expires_at, uv.status
+            SELECT uv.id, vt.title, vt.description, vt.image_url, uv.expires_at, uv.status, uv.redeemed_at
             FROM user_vouchers uv
             JOIN voucher_templates vt ON uv.template_id = vt.id
             JOIN users u ON uv.user_id = u.id
-            WHERE u.email = $1 AND uv.status = 'active'
-            ORDER BY uv.expires_at ASC
+            WHERE u.email = $1
+            ORDER BY uv.status ASC, uv.expires_at ASC
         `;
         const result = await db.query(query, [req.params.email]);
         res.json(result.rows);
     } catch (err) {
         res.status(500).send("Error fetching vouchers");
+    }
+});
+
+// POST /api/users/redeem-voucher
+router.post('/redeem-voucher', async (req, res) => {
+    const { voucherId } = req.body;
+    try {
+       
+        const userRes = await db.query(`
+            SELECT u.email FROM users u 
+            JOIN user_vouchers uv ON u.id = uv.user_id 
+            WHERE uv.id = $1`, [voucherId]);
+
+        if (userRes.rows.length === 0) return res.status(404).send("Voucher not found");
+        const email = userRes.rows[0].email;
+
+        
+        await db.query(
+            "UPDATE user_vouchers SET status = 'used', redeemed_at = NOW() WHERE id = $1",
+            [voucherId]
+        );
+
+        triggerFullSync(email).catch(e => console.error("Sync after redeem failed", e));
+
+        res.json({ success: true });
+    } catch (err) {
+        console.error(err);
+        res.status(500).send("Redemption failed");
     }
 });
 

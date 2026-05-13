@@ -23,6 +23,7 @@
     font-weight: 900;
     margin-bottom: 20px;
     padding-left: 10px;
+    animation: fadeInSlide 1.2s ease-out forwards;
 }
 
 .brand span {
@@ -34,6 +35,8 @@
     flex-direction: column;
     gap: 10px;
     flex-grow: 1;
+    animation: fadeInSlide 1s ease-out both;
+    animation-delay: 0.4s;
 }
 
 .navItem,
@@ -73,11 +76,103 @@
     align-items: center;
     justify-content: center;
     gap: 10px;
+    animation: fadeInSlide 1s ease-out both;
+    animation-delay: 0.4s;
 }
 
 .mainContent {
     flex-grow: 1;
     margin-left: 250px;
-    /* Leave space for the sidebar */
-    padding: 40px;
+    min-height: 100vh;
+    padding: 40px 20px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.contentWrapper {
+    width: 100%;
+    max-width: 1200px;
+}
+
+/* ---MOBILE--- */
+.mobileMenuBtn {
+    display: none;
+    /* Прячем на десктопе */
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    z-index: 2100;
+    background: var(--miners-lime);
+    border: none;
+    padding: 10px;
+    border-radius: 8px;
+    cursor: pointer;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+}
+
+.mobileHeader {
+    display: none;
+}
+
+/* --- МОБИЛЬНАЯ ВЕРСТКА --- */
+@media (max-width: 700px) {
+    .mobileMenuBtn {
+        display: flex;
+    }
+
+    .sidebar {
+        left: -260px;
+        transition: left 0.3s ease;
+        z-index: 2000;
+    }
+
+    .sidebarOpen {
+        left: 0;
+    }
+
+    .mainContent {
+        margin-left: 0;
+    }
+
+    .contentWrapper {
+        max-width: 100%;
+    }
+
+    .overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: rgba(0, 0, 0, 0.5);
+        z-index: 1900;
+        backdrop-filter: blur(3px);
+    }
+
+    .mobileHeader {
+        display: block;
+        margin-bottom: 20px;
+        border-bottom: 1px solid #ddd;
+        padding-bottom: 10px;
+    }
+
+    .mobileHeader h1 {
+        font-size: 2rem;
+        text-transform: uppercase;
+        font-weight: 700;
+    }
+}
+
+/*--- ANIMATIONS ---*/
+@keyframes fadeInSlide {
+    from {
+        opacity: 0;
+        transform: translateY(15px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
 }

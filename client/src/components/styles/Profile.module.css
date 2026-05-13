@@ -1,177 +1,406 @@
-.container, .profilePage {
+/* --- GLOBAL LAYOUT --- */
+.profilePage {
+    max-width: 100%;
     width: 100%;
-    margin: 10px 0;
-    padding: 10px;
+    min-height: 100vh;
+    background-color: var(--color-black);
+    color: #fff;
     font-family: 'TheMinersFont', sans-serif;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.splitLayout {
+    display: flex;
+    width: 100%;
+    max-width: 1100px;
+    gap: 60px;
+}
+
+/* --- LEFT SIDE: THE CARD (YOUR DESIGN) --- */
+.leftSide {
+    flex: 1;
+    position: sticky;
+    top: 40px;
+    height: fit-content;
 }
 
 .card {
-    background-color: var(--color-black);
-    color: var(--miners-gray);
-    border-radius: 15px;
-    padding: 30px;
+    background: linear-gradient(145deg, #111, #000);
+    border: 1px solid #222;
+    border-radius: 24px;
+    padding: 30px 25px;
     text-align: center;
-    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
+    animation: fadeInSlide 0.8s ease-out both;
 }
 
 .title {
-    font-size: 12px;
-    letter-spacing: 3px;
+    font-size: 1rem;
+    font-weight: 200;
     text-transform: uppercase;
-    color: var(--miners-gray);
+    letter-spacing: 3px;
+    color: #555;
     margin-bottom: 20px;
 }
 
 .userName {
-    font-size: 28px;
-    font-weight: 200;
-    margin-bottom: 5px;
+    font-size: 1.25rem;
+    font-weight: 700;
+    margin: 0;
+    text-transform: uppercase;
+    letter-spacing: -0.5px;
 }
 
 .branchName {
-    font-size: 14px;
-    color: #aaaaaa;
+    font-size: 1rem;
+    color: #888;
+    margin-top: 5px;
     margin-bottom: 30px;
 }
 
 .qrContainer {
-    background-color: #ffffff;
+    background-color: #fff;
     padding: 15px;
     display: inline-block;
-    border-radius: 10px;
+    border-radius: 16px;
     margin-bottom: 30px;
 }
 
 .statsGrid {
     display: grid;
     grid-template-columns: 1fr 1fr;
-    gap: 10px;
-    border-top: 1px solid #333333;
-    padding-top: 20px;
-    text-align: left;
+    gap: 20px;
+    border-top: 1px solid #222;
+    padding-top: 25px;
+    margin-top: 10px;
+}
+
+.statBox {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.fullWidth {
+    grid-column: span 2;
+    border-top: 1px solid #1a1a1a;
+    padding-top: 15px;
 }
 
 .statLabel {
     font-size: 10px;
+    font-weight: 200;
     text-transform: uppercase;
-    color: #666666;
+    letter-spacing: 2px;
+    color: #555;
+    margin-bottom: 6px;
 }
 
 .statValue {
-    font-size: 20px;
-    font-weight: 400;
+    font-size: 22px;
+    font-weight: 700;
+    color: #fff;
+    margin: 0;
+    text-transform: uppercase;
 }
 
 .points {
-    color: #FFD700;
-    /* Золотой акцент для баллов */
+    color: var(--miners-orange);
+}
+
+.benefitsValue {
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--miners-yellow);
+    text-align: center;
+    margin: 0;
+    letter-spacing: 0.5px;
+}
+
+/* --- GOOGLE WALLET (YOUR DESIGN) --- */
+.walletButtonContainer {
+    margin-top: 25px;
+    text-align: center;
+    animation: fadeInSlide 0.8s ease-out both;
+    animation-delay: 0.5s;  
+}
+
+.walletButtonContainer img {
+    transition: transform 0.2s ease;
+}
+
+.walletButtonContainer img:active {
+    transform: scale(0.95);
+}
+
+/* --- LOGOUT BUTTON (YOUR DESIGN) --- */
+.logoutBtn {
+    margin: 40px auto 0 auto;
+    background: none;
+    border: 1px solid var(--miners-red);;
+    color: var(--miners-red);
+    padding: 12px 25px;
+    border-radius: 8px;
+    font-weight: bold;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    cursor: pointer;
+    text-transform: uppercase;
+    font-size: 12px;
+    width: 100%;
+    max-width: 180px;
+    animation: fadeInSlide 0.8s ease-out both;
+    animation-delay: 0.5s;
+}
+
+/* --- RIGHT SIDE: CONTENT --- */
+.rightSide {
+    flex: 1.4;
 }
 
 .tabs {
     display: flex;
     justify-content: center;
-    gap: 20px;
-    margin-bottom: 20px;
+    gap: 30px;
+    padding: 20px 0;
+    position: sticky;
+    width: 100%;
+    top: 0;
+    background-color: rgba(0, 0, 0, 0.8);
+    backdrop-filter: blur(10px);
+    z-index: 10;
 }
 
 .tab,
 .activeTab {
     background: none;
     border: none;
-    color: white;
+    color: #666;
+    font-size: 13px;
+    font-weight: 700;
+    letter-spacing: 2px;
     cursor: pointer;
-    padding: 10px;
-    border-bottom: 2px solid transparent;
+    padding: 10px 5px;
+    transition: color 0.3s ease;
+    text-transform: uppercase;
 }
 
 .activeTab {
-    border-bottom: 2px solid #FFD700;
+    color: var(--miners-orange);
+    border-bottom: 2px solid var(--miners-orange);
 }
 
-.walletButtonContainer {
-    text-align: center;
-    margin-top: 20px;
+.tab {
+    color: #444;
 }
 
-/* Container for the whole section */
-.vouchersSection {
-    margin-top: 40px;
-    padding: 0 20px;
-    width: 100%;
-}
-
-/* "My Vouchers" Heading */
-.inventoryTitle {
-    font-size: 1rem;
-    font-weight: 300;
-    text-align: center;
-    text-transform: uppercase;
-    letter-spacing: 2px;
-    color: #666;
-    /* Muted gray for the label */
-    margin-bottom: 15px;
-    border-bottom: 1px solid #666;
-    padding-bottom: 8px;
-}
-
-/* List wrapper */
-.voucherList {
+/* --- VOUCHER CARDS (YOUR DESIGN COMBINED WITH TIMER) --- */
+.voucherGrid {
     display: flex;
     flex-direction: column;
-    gap: 12px;
+    gap: 15px;
 }
 
-/* The individual Voucher Card (Button) */
-.voucherButton {
-    background-color: var(--color-black);
-    /* Very dark gray, slightly off-black */
-    border: none;
-    border-left: 4px solid #FFEA00;
-    /* Branding yellow accent */
-    border-radius: 4px;
-    padding: 18px 20px;
-    color: white;
-    cursor: pointer;
-    transition: transform 0.1s ease, background-color 0.2s ease;
-    text-align: left;
+.vCard {
+    background: #111;
+    border: 1px solid #222;
+    border-radius: 20px;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    animation: fadeInSlide 0.8s ease-out both;
+    animation-delay: 0.5s;
+}
+
+.vImageWrapper {
+    height: 140px;
+        width: 100%;
+        position: relative;
+        background: #000;
+}
+
+.vImageWrapper img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    opacity: 0.7;
+}
+
+/* Functional Timer Overlay */
+.timerOverlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(255, 102, 0, 0.2);
+    backdrop-filter: blur(2px);
     display: flex;
     align-items: center;
-    justify-content: space-between;
+    justify-content: center;
+    font-weight: 200;
+    font-size: 12px;
+    letter-spacing: 2px;
+    color: #000;
 }
 
-.voucherButton:active {
-    transform: scale(0.98);
-    background-color: #222;
+.timerBox {
+    text-align: center;
 }
 
-/* Layout inside the button */
-.vButtonContent {
-    display: flex;
-    flex-direction: column;
-    gap: 4px;
-}
-
-/* Voucher Name */
-.vButtonContent span {
+.timerBox span {
     font-size: 1rem;
     font-weight: 200;
-    text-transform: uppercase;
+    letter-spacing: 2px;
 }
 
-/* "TAP TO USE" text */
-.vButtonContent small {
+.timerBox h2 {
+    font-size: 4rem;
+    font-weight: 900;
+    margin: 0;
+}
+
+.vContent {
+    padding: 20px;
+}
+
+.vHeader {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 10px;
+    margin-bottom: 10px;
+}
+
+.vHeader h4 {
+    margin: 0;
+    font-size: 18px;
+    font-weight: 200;
+    text-transform: uppercase;
+    color: #fff;
+}
+
+.vExpiry {
     font-size: 10px;
     font-weight: 400;
-    color: #FFEA00;
-    /* Yellow to draw attention */
-    letter-spacing: 1px;
+    color: #555;
 }
 
-/* Style for empty state */
+.vDescription {
+    font-size: 13px;
+    color: #888;
+    line-height: 1.4;
+    margin-bottom: 20px;
+}
+
+.btnActivate,
+.btnShow {
+    width: 100%;
+    padding: 14px;
+    border-radius: 10px;
+    font-weight: 400;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    cursor: pointer;
+    border: none;
+    transition: all 0.2s;
+}
+
+.btnActivate {
+    background-color: var(--miners-orange);
+    color: #000;
+}
+
+.btnShow {
+    background-color: transparent;
+    border: 1px solid var(--miners-orange);
+    color: var(--miners-orange);
+}
+
+/* --- HISTORY SECTION --- */
+.sectionTitle {
+    font-size: 1.5rem;
+    font-weight: 400;
+    text-transform: uppercase;
+    color: var(--color-white);
+    margin-bottom: 15px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    animation: fadeInSlide 0.8s ease-out both;
+}
+
+.historyItem {
+    background: var(--miners-gray-dark);
+    padding: 12px 20px;
+    border-radius: 10px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border: 1px solid #111;
+    opacity: 0.5;
+    margin-bottom: 8px;
+    animation: fadeInSlide 0.8s ease-out both;
+    animation-delay: 0.5s;
+}
+
+.historyItem span {
+    font-weight: 700;
+    text-transform: uppercase;
+    font-size: 13px;
+    color: var(--color-white);
+}
+
+/* --- STATES --- */
+.loading {
+    height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #555;
+    font-weight: 400;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+}
+
 .emptyText {
-    color: #444;
-    font-size: 14px;
     text-align: center;
+    color: var(--miners-gray-dark);
+    font-size: 2rem;
     margin-top: 20px;
-    font-style: italic;
+}
+
+/* --- RESPONSIVENESS --- */
+@media (max-width: 700px) {
+    .splitLayout {
+        flex-direction: column;
+        width: 100%;
+        gap: 30px;
+    }
+
+    .leftSide, .rightSide {
+        position: relative;
+        top: 0;
+        width: 100%;
+    }
+
+    .leftSide, .section {
+        padding: 20px;
+    }
+}
+
+@keyframes fadeInSlide {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
 }

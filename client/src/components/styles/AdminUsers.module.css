@@ -1,13 +1,14 @@
 .listContainer {
+    width: 100%;
     display: flex;
     flex-direction: column;
     gap: 15px;
-    max-width: 1000px;
 }
 
 /* Панель инструментов: Поиск + 3 Фильтра */
 .toolbar {
     display: flex;
+    width: 100%;
     gap: 15px;
     background:var(--color-white);
     padding: 20px;
@@ -16,6 +17,7 @@
     margin-bottom: 25px;
     align-items: center;
     flex-wrap: wrap;
+    animation: fadeInSlide 1s ease-out forwards;
 }
 
 .searchField {
@@ -64,6 +66,8 @@
     align-items: center;
     box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
     transition: transform 0.2s ease;
+    animation: fadeInSlide 0.8s ease-out both;
+    animation-delay: 0.4s;
 }
 
 .userCard:hover {
@@ -71,9 +75,10 @@
 }
 
 .userInfo {
-    display: flex;
+    flex: 1;
     flex-direction: column;
     gap: 5px;
+    min-width: 0;
 }
 
 .userName {
@@ -81,11 +86,14 @@
     font-size: 1rem;
     color: var(--color-black);
     text-transform: uppercase;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    overflow: hidden;
 }
 
 .branchTag,
 .userEmail {
-    display: inline-flex;
+    display: flex;
     align-items: center;
     gap: 5px;
     font-weight: 200;
@@ -96,6 +104,9 @@
     color: var(--miners-gray-dark);
     margin-top: 5px;
     width: max-content;
+    text-overflow: ellipsis;
+    overflow: hidden;
+    word-break: break-all;
 }
 
 /* Display Mode Styles */
@@ -119,18 +130,6 @@
 .value {
     font-weight: 200;
     font-size: 18px;
-}
-
-.tierBadge {
-    padding: 6px 16px;
-    border-radius: 20px;
-    font-size: 1rem;
-    text-transform: uppercase;
-    font-weight: 200;
-    color: var(--color-black);
-    width: 110px;
-    text-align: center;
-    background-color: var(--miners-grey-dark);
 }
 
 .isCrew {
@@ -164,6 +163,17 @@
     border: 1px solid var(--miners-gray-dark);
     border-radius: 6px;
     font-weight: 200;
+    outline: none;
+}
+
+.tierBadge {
+    background: #000;
+    font-size: 1rem;
+    width: 120px;
+    text-align: center;
+    padding: 5px 10px;
+    border-radius: 4px;
+    font-weight: 700;
 }
 
 .selectTier {
@@ -182,7 +192,6 @@
     cursor: pointer;
     display: flex;
     align-items: center;
-    justify-content: center;
 }
 
 .saveBtn {
@@ -193,4 +202,33 @@
 .cancelBtn {
     background-color: var(--miners-red);
     color: var(--color-white);
+}
+
+@keyframes fadeInSlide {
+    from {
+        opacity: 0;
+        transform: translateY(15px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* --- Mobile & Tablet --- */
+@media (max-width: 700px) {
+    .userCard {
+        flex-direction: column;
+        align-items: flex-start;
+        padding: 20px;
+    }
+
+    .displayInfo, .editActions {
+        width: 100%;
+        justify-content: space-between;
+        margin-top: 15px;
+        padding-top: 15px;
+        border-top: 1px solid #f1f5f9;
+    }
 }

@@ -17,6 +17,8 @@
     gap: 20px;
     box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
     transition: transform 0.2s ease;
+    animation: fadeInSlide 0.8s ease-out both;
+    animation-delay: 0.4s;
 }
 
 .card:hover {
@@ -56,8 +58,9 @@
     background: white;
     padding: 30px;
     border-radius: 16px;
-    border-left: 6px solid var(--miners-yellow);
+    border-left: 6px solid var(--miners-orange);
     box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+    animation: fadeInSlide 1s ease-out forwards;
 }
 
 .welcomeBox h3 {
@@ -68,4 +71,22 @@
 .welcomeBox p {
     margin: 5px 0 0 0;
     color: #666;
+}
+
+@media (max-width: 700px) {
+    .grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+@keyframes fadeInSlide {
+    from {
+        opacity: 0;
+        transform: translateY(15px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
 }

@@ -1,102 +1,102 @@
-/* Register.module.css */
-body{
-    background-color: #1a1a1a;
-}
-
+/* Container is now transparent because it sits inside the dark App.jsx panel */
 .container {
-    max-width: 400px;
-    margin: 40px auto;
-    padding: 30px;
-    background-color: #ffffff;
-    border: 1px solid #313131;
-    border-radius: 4px;
-
-}
-
-.title {
-    font-size: 2em;
-    text-transform: uppercase;
-    margin-bottom: 25px;
-    text-align: center;
-    font-weight: 400;
+    width: 100%;
 }
 
 .formGroup {
     display: flex;
     flex-direction: column;
-    margin-bottom: 15px;
+    gap: 15px;
 }
 
-.form_data {
-    display: flex;
-    flex-direction: column;
-}
-
-.label {
-    font-size: 1em;
-    text-transform: uppercase;
-    margin-bottom: 5px;
-}
-
+/* Common input and select style */
 .input {
-    padding: 10px;
-    border: 1px solid #cccccc;
-    border-radius: 0;
-    font-size: 10pt;
+    width: 100%;
+    padding: 12px;
+    background-color: #111;
+    border: 1px solid #333;
+    border-radius: 8px;
+    color: white;
+    font-size: 15px;
     outline: none;
-    margin-bottom: 10px;
+    transition: border-color 0.2s;
 }
 
-/* Контейнер для трех полей даты */
+.input:focus {
+    border-color: var(--miners-orange);
+}
+
+/* Labels for sections */
+.label {
+    font-size: 11px;
+    font-weight: 200;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: #888;
+    margin-bottom: 8px;
+    margin-top: 5px;
+}
+
+/* Date Row Styling */
 .dateRow {
     display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 30px;
+    gap: 10px;
 }
 
 .inputDate {
-    padding: 10px;
-    border: 1px solid #cccccc;
-    border-radius: 0;
+    background-color: #111;
+    border: 1px solid #333;
+    border-radius: 8px;
+    color: white;
+    padding: 12px;
     text-align: center;
     outline: none;
 }
 
 .inputDate:focus {
-    border-color: #000000;
+    border-color: var(--miners-orange);
 }
 
 .inputSmall {
-    width: 90px;
+    width: 65px;
 }
 
 .inputMedium {
-    width: 130px;
+    width: 100px;
 }
 
-.input:focus {
-    border-color: #000000;
+/* Form data wrapper for spacing */
+.form_data {
+    display: flex;
+    flex-direction: column;
 }
 
+/* The Big Finish Button */
 .submitButton {
-    background-color: #000000;
-    color: #ffffff;
-    padding: 15px;
+    background-color: var(--miners-orange);
+    color: black;
     border: none;
+    padding: 16px;
+    border-radius: 8px;
+    font-weight: 200;
     text-transform: uppercase;
     cursor: pointer;
-    transition: background 0.3s ease;
-    margin-top: 10px;
+    margin-top: 15px;
+    transition: transform 0.1s, opacity 0.2s;
 }
 
 .submitButton:hover {
-    background-color: #333333;
+    opacity: 0.9;
 }
 
+.submitButton:active {
+    transform: scale(0.98);
+}
+
+/* Messages */
 .successMessage {
-    color: green;
+    color: var(--miners-green);
     text-align: center;
+    font-weight: bold;
     margin-top: 15px;
-    font-size: 14px;
 }

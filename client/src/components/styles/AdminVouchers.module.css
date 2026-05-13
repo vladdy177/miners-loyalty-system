@@ -1,210 +1,308 @@
 .container {
-    max-width: 1000px;
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    gap: 30px;
 }
 
 .addCard {
-    background-color: var(--color-white);
-    padding: 25px;
-    border-radius: 12px;
+    background-color: #ffffff;
+    padding: 30px;
+    border-radius: 16px;
     margin-bottom: 40px;
-    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.06);
+    animation: fadeInSlide 1s ease-out forwards;
 }
 
-.addCard h1 {
+.adminSectionTitle {
+    font-size: 16px;
+    font-weight: 700;
+    color: #000;
+    margin-bottom: 25px;
+}
+
+.sectionHint {
+    font-size: 12px;
+    color: #888;
+    margin-top: -15px;
     margin-bottom: 20px;
-}
-
-.addCard h3 {
-    margin-top: 0;
-    font-size: 1rem;
-    text-transform: uppercase;
-    color: var(--miners-gray-dark);
-}
-
-.addCard p {
-    margin-top: 0;
-    font-size: 0.5rem;
-    color: var(--miners-gray-dark);
 }
 
 .formContent {
     display: flex;
     flex-direction: column;
-    gap: 15px;
+    gap: 20px;
+    justify-content: center;
 }
 
 .inputGroup {
     display: flex;
-    gap: 15px;
+    gap: 20px;
+    flex-wrap: wrap;
 }
 
-.inputMain {
-    flex: 3;
-    padding: 12px;
-    border: 1px solid var(--miners-gray);
-    border-radius: 8px;
-    font-size: 15px;
+.segment{
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    justify-content: end;
 }
 
-.inputNumber:disabled {
-    background-color: var(--miners-gray);
-    color: var(--miners-gray);
-    cursor: not-allowed;
-    border-color: var(--miners-gray);
-}
-
-.inputNumber,
-.inputSelect {
+.inputWithLabel {
+    display: flex;
+    flex-direction: column;
     flex: 1;
+    min-width: 100px;
+}
+
+.fieldLabel {
+    font-size: 10px;
+    font-weight: 400;
+    color: #aaa;
+    text-transform: uppercase;
+    margin-bottom: 6px;
+}
+
+.inputMain,
+.inputNumber,
+.inputSelect,
+.textarea {
     padding: 12px;
-    border: 1px solid var(--miners-gray);
+    border: 1px solid #e2e8f0;
     border-radius: 8px;
-    background-color: var(--color-white);
+    font-size: 14px;
+    font-family: inherit;
+    outline: none;
+    background: #fff;
 }
 
 .textarea {
-    width: 100%;
     height: 80px;
-    padding: 12px;
-    border: 1px solid var(--miners-gray);
-    border-radius: 8px;
-    font-family: inherit;
     resize: none;
 }
 
 .formActions {
     display: flex;
-    gap: 10px;
-    justify-content: flex-end;
-    margin-top: 10px;
+    flex-direction: row-reverse;
+    justify-content: space-between;
 }
 
 .submitBtn {
-    background-color: var(--color-black);
-    color: var(--color-white);
+    background: var(--color-black);
+    color: #fff;
     border: none;
-    padding: 12px 25px;
+    padding: 14px 30px;
     border-radius: 8px;
+    font-weight: 400;
+    cursor: pointer;
     display: flex;
     align-items: center;
     gap: 10px;
-    font-weight: 200;
-    cursor: pointer;
-}
+}   
 
-.cancelBtn {
-    background-color: var(--miners-gray);
-    color: var(--miners-gray-dark);
+.cancelBtn{
+    background: var(--color-black);
+    color: #fff;
     border: none;
-    width: 45px;
-    height: 45px;
+    padding: 14px 30px;
     border-radius: 8px;
+    cursor: pointer;
     display: flex;
     align-items: center;
-    justify-content: center;
-    cursor: pointer;
 }
 
-/* List Styles */
+.blastBtn {
+    background: var(--miners-orange);
+    color: #000;
+    border: none;
+    padding: 10px 25px;
+    border-radius: 8px;
+    font-weight: 700;
+    cursor: pointer;
+    max-width: fit-content;
+}
+
+/* LIST CARDS */
 .vouchersList {
-    display: flex;
-    flex-direction: column;
-    gap: 12px;
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(500px, 1fr));
+    gap: 20px;
 }
 
 .voucherCard {
-    background-color: var(--color-white);
-    padding: 18px 25px;
-    border-radius: 10px;
+    background: white;
+    border-radius: 14px;
+    padding: 15px;
     display: flex;
-    justify-content: space-between;
     align-items: center;
-    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.03);
-    border-left: 5px solid var(--miners-gray-dark);
-    transition: transform 0.2s ease;
-}
-
-.voucherCard:hover {
-    transform: translateY(-4px);
-}
-
-.voucherInfo img {
-    width: 100px;
-    object-fit: cover;
-    border-radius: 5px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.03);
+    animation: fadeInSlide 0.8s ease-out both;
+    animation-delay: 0.4s;
 }
 
 .voucherInfo {
-    font-weight: 400;
-    font-size: 16px;
+    display: flex;
+    gap: 20px;
+    align-items: center;
+    flex: 1;
+}
+
+.vImgPreview {
+    width: 200px;
+    height: 100px;
+    border-radius: 10px;
+    overflow: hidden;
+    background: #f4f4f4;
+    flex-shrink: 0;
+}
+
+.vImgPreview img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.voucherDesc {
+    display: flex;
+    flex-direction: column;
+    height: 100px;
+    justify-content: space-between;
+}
+
+.voucherDesc h3 {
+    margin: 0;
+    font-size: 18px;
+    font-weight: 700;
     text-transform: uppercase;
+    min-width: 0;
+}
+
+.vShortDesc {
+    font-size: 13px;
+    color: #666;
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+
+.vMeta {
     display: flex;
     align-items: center;
     gap: 10px;
-}
-
-.voucherDesc{
-    display: flex;
-    flex-direction: column;
-    gap: 5px;
-}
-
-.voucherDesc h3{
-    font-size: 16px;
+    font-size: 11px;
     font-weight: 400;
+    color: #000;
 }
 
-.voucherDesc p{
-    font-size: 14px;
-    font-weight: 200;
-    text-transform: none;
+.dot {
+    color: var(--miners-orange);
+    font-size: 18px;
 }
 
-.voucherCost {
-    color: var(--miners-gray-dark);
-    font-weight: 400;
-    font-size: 12px;
-    text-transform: lowercase;
-}
-
-.crewTag {
-    background-color: var(--miners-red);
-    color: var(--color-white);
-    font-size: 1em;
-    width: fit-content;
+.crewBadge {
+    background: #000;
+    color: var(--miners-orange);
+    font-size: 9px;
     padding: 2px 8px;
     border-radius: 4px;
-    font-weight: 400;
+    font-weight: 700;
 }
 
 .actions {
     display: flex;
+    flex-direction: column;
     gap: 10px;
-}
-
-.deleteBtn,
-.editBtn {
-    background: none;
-    border: none;
-    cursor: pointer;
-    padding: 8px;
-    border-radius: 50%;
-    transition: background 0.2s;
-    display: flex;
 }
 
 .editBtn {
     color: var(--miners-blue-cyan);
+    border: none;
+    padding: 8px 10px;
+    border-radius: 50%;
+    cursor: pointer;
+    background: none;
+}
+
+.editBtn:hover {
+    background: var(--miners-blue-light);
 }
 
 .deleteBtn {
     color: var(--miners-red);
+    border: none;
+    padding: 8px 10px;
+    border-radius: 50%;
+    cursor: pointer;
+    background: none;
 }
 
-.deleteBtn:hover {
-    background-color: var(--miners-pink-light);
+.deleteBtn:hover{
+    background: var(--miners-pink-light);
 }
 
-.editBtn:hover {
-    background-color: var(--miners-blue-light);
+@keyframes fadeInSlide {
+    from {
+        opacity: 0;
+        transform: translateY(15px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@media (max-width: 700px) {
+    #segmentation{
+        flex-direction: column;
+    }
+
+    .vouchersList {
+        grid-template-columns: 1fr;
+        /* Строго одна колонка */
+    }
+
+    .voucherCard {
+        padding: 15px;
+        gap: 15px;
+    }
+
+    .vImgPreview {
+        width: 80px;
+        height: 80px;
+    }
+
+    .titleRow h3 {
+        font-size: 16px;
+    }
+
+    .titleRow {
+        display: flex;
+        flex-direction: column-reverse;
+        gap: 5px;
+    }
+    .crewBadge {
+        width: max-content;
+    }
+
+    .vShortDesc {
+        font-size: 12px;
+        font-weight: 200;
+    }
+    
+    .voucherDesc h3 {
+        font-size: 14px;
+    }
+
+    .voucherDesc {
+        display: flex;
+        flex-direction: column;
+        height: 80px;
+        justify-content: space-between;
+    }
+
+    .actions {
+        flex-direction: row;
+        /* На мобилке кнопки в ряд, чтобы было удобнее тыкать */
+    }
 }

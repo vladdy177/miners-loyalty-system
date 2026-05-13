@@ -1,12 +1,14 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
 import { Plus, Trash2, Pencil, Save, X, MapPin } from "lucide-react";
-import styles from "../styles/AdminBranches.module.css"; // Используем те же стили
+import styles from "../styles/AdminBranches.module.css";
+import Popup from "../Popup";
 
 const AdminBranches = () => {
     const [branches, setBranches] = useState([]);
     const [editingId, setEditingId] = useState(null);
     const [refreshTrigger, setRefreshTrigger] = useState(0);
+    const [popup, setPopup] = useState({ isOpen: false, type: 'info', title: '', message: '', onConfirm: null });
 
     const [formData, setFormData] = useState({
         name: "",
@@ -25,6 +27,10 @@ const AdminBranches = () => {
         return () => controller.abort();
     }, [apiUrl, refreshTrigger]);
 
+    const showMessage = (type, title, message, onConfirm = null) => {
+        setPopup({ isOpen: true, type, title, message, onConfirm });
+    };
+
     const handleSubmit = async (e) => {
         e.preventDefault();
         try {
@@ -35,17 +41,26 @@ const AdminBranches = () => {
             resetForm();
             setRefreshTrigger(prev => prev + 1);
         } catch (err) {
-            alert("Failed to save location.", err);
-        }
+        showMessage('error', 'Save Failed', err.response?.data?.error || "Failed to save location.");
+    }
     };
 
-    const deleteBranch = async (id) => {
-        if (!window.confirm("Delete this location? This will fail if customers are assigned to it.")) return;
+    const deleteB = (id) => {
+        showMessage(
+            'warning',
+            'DELETE REWARD?',
+            'Are you sure? This cannot be undone.',
+            () => executeDelete(id)
+        );
+    };
+
+    const executeDelete = async (id) => {
         try {
             await axios.delete(`${apiUrl}/api/admin/branches/${id}`);
             setRefreshTrigger(prev => prev + 1);
+            showMessage('success', 'Deleted', 'The branch has been removed from the system.');
         } catch (err) {
-            alert(err.response?.data?.error || "Error deleting branch");
+            showMessage('error', 'Delete Failed', `This location is already linked to users and cannot be deleted.(${err})`);
         }
     };
 
@@ -63,7 +78,7 @@ const AdminBranches = () => {
         <div className={styles.container}>
             {/* BRANCH FORM */}
             <div className={styles.addCard}>
-                <h1>{editingId ? "Edit Location" : "Add New Location"}</h1>
+                <h2>{editingId ? "Edit Location" : "Add New Location"}</h2>
                 <form onSubmit={handleSubmit} className={styles.formContent}>
                     <div className={styles.inputGroup}>
                         <input
@@ -111,7 +126,7 @@ const AdminBranches = () => {
             </div>
 
             {/* BRANCH LIST */}
-            <div className={styles.list}>
+            <div className={styles.branchlist}>
                 {branches.map(b => (
                     <div key={b.id} className={styles.branchCard}>
                         <div className={styles.branchInfo}>
@@ -123,11 +138,19 @@ const AdminBranches = () => {
                         </div>
                         <div className={styles.actions}>
                             <button onClick={() => startEdit(b)} className={styles.editBtn}><Pencil size={18} /></button>
-                            <button onClick={() => deleteBranch(b.id)} className={styles.deleteBtn}><Trash2 size={18} /></button>
+                            <button onClick={() => deleteB(b.id)} className={styles.deleteBtn}><Trash2 size={18} /></button>
                         </div>
                     </div>
                 ))}
             </div>
+            <Popup
+                isOpen={popup.isOpen}
+                type={popup.type}
+                title={popup.title}
+                message={popup.message}
+                onConfirm={popup.onConfirm}
+                onClose={() => setPopup({ ...popup, isOpen: false })}
+            />
         </div>
     );
 };

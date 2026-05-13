@@ -1,0 +1,319 @@
+.profilePage {
+    max-width: 100%;
+    width: 100%;
+    min-height: 100vh;
+    background-color: #000;
+    color: #fff;
+    font-family: 'TheMinersFont', sans-serif;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+/* --- TABS --- */
+.tabs {
+    display: flex;
+    justify-content: center;
+    gap: 30px;
+    padding: 20px 0;
+    position: sticky;
+    width: 100%;
+    top: 0;
+    background-color: rgba(0, 0, 0, 0.8);
+    backdrop-filter: blur(10px);
+    z-index: 10;
+}
+
+.tab,
+.activeTab {
+    background: none;
+    border: none;
+    color: #666;
+    font-size: 13px;
+    font-weight: 700;
+    letter-spacing: 2px;
+    cursor: pointer;
+    padding: 10px 5px;
+    transition: color 0.3s ease;
+    text-transform: uppercase;
+}
+
+.activeTab {
+    color: var(--miners-orange);
+    border-bottom: 2px solid var(--miners-orange);
+}
+
+/* --- THE CARD --- */
+.container {
+    padding: 10px 20px;
+    animation: fadeInSlide 0.8s ease-out both;
+    animation-delay: 0.2s;
+}
+
+.card {
+    background: linear-gradient(145deg, #111, #000);
+    border: 1px solid #222;
+    border-radius: 24px;
+    padding: 30px 25px;
+    text-align: center;
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
+}
+
+.title {
+    font-size: 1rem;
+    font-weight: 200;
+    text-transform: uppercase;
+    letter-spacing: 3px;
+    color: #555;
+    margin-bottom: 20px;
+}
+
+.userName {
+    font-size: 1.25rem;
+    font-weight: 700;
+    margin: 0;
+    text-transform: uppercase;
+    letter-spacing: -0.5px;
+}
+
+.branchName {
+    font-size: 1rem;
+    color: #888;
+    margin-top: 5px;
+    margin-bottom: 30px;
+}
+
+.qrContainer {
+    background-color: #fff;
+    padding: 15px;
+    display: inline-block;
+    border-radius: 16px;
+    margin-bottom: 30px;
+}
+
+.statsGrid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 15px;
+    border-top: 1px solid #222;
+    padding-top: 25px;
+}
+
+.statLabel {
+    font-size: 0.75rem;
+    font-weight: 400;
+    text-transform: uppercase;
+    color: #555;
+    margin-bottom: 5px;
+}
+
+.statValue {
+    font-size: 22px;
+    font-weight: 200;
+    margin: 0;
+}
+
+.points {
+    color: var(--miners-orange);
+}
+
+/* --- GOOGLE WALLET --- */
+.walletButtonContainer {
+    margin-top: 25px;
+    text-align: center;
+}
+
+.walletButtonContainer img {
+    transition: transform 0.2s ease;
+}
+
+.walletButtonContainer img:active {
+    transform: scale(0.95);
+}
+
+/* --- VOUCHERS SECTION --- */
+.inventoryTitle {
+    text-align: center;
+    text-transform: uppercase;
+    font-weight: 200;
+    padding-bottom: 10px;
+    border-bottom: 1px solid var(--color-white);
+    margin-bottom: 20px;
+}
+
+.vouchersSection {
+    margin-top: 20px;
+    width: 100%;
+}
+
+.voucherGrid {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.vCard {
+    background: #111;
+    border: 1px solid #222;
+    border-radius: 20px;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    animation: fadeInSlide 0.5s ease-out both;
+}
+
+.vImageWrapper {
+    height: 140px;
+    width: 100%;
+    position: relative;
+    background: #000;
+}
+
+.vImageWrapper img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    opacity: 0.7;
+}
+
+.timerOverlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(255, 102, 0, 0.2);
+    backdrop-filter: blur(2px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 200;
+    font-size: 12px;
+    letter-spacing: 2px;
+    color: #000;
+}
+
+.vContent {
+    padding: 20px;
+}
+
+.vHeader {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 10px;
+    margin-bottom: 10px;
+}
+
+.vHeader h4 {
+    margin: 0;
+    font-size: 18px;
+    font-weight: 200;
+    text-transform: uppercase;
+    color: #fff;
+}
+
+.vExpiry {
+    font-size: 10px;
+    font-weight: 400;
+    color: #555;
+}
+
+.vDescription {
+    font-size: 13px;
+    color: #888;
+    line-height: 1.4;
+    margin-bottom: 20px;
+}
+
+.btnActivate,
+.btnShow {
+    width: 100%;
+    padding: 14px;
+    border-radius: 10px;
+    font-weight: 400;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    cursor: pointer;
+    border: none;
+    transition: all 0.2s;
+}
+
+.btnActivate {
+    background-color: var(--miners-orange);
+    color: #000;
+}
+
+.btnShow {
+    background-color: transparent;
+    border: 1px solid var(--miners-orange);
+    color: var(--miners-orange);
+}
+
+.btnActivate:active,
+.btnShow:active {
+    transform: scale(0.97);
+}
+
+.logoutBtn {
+    margin-top: 60px;
+    background: none;
+    border: 1px solid #222;
+    color: var(--miners-red);
+    padding: 12px 25px;
+    border-radius: 8px;
+    font-weight: bold;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    cursor: pointer;
+    text-transform: uppercase;
+    font-size: 12px;
+}
+
+/* --- STATES --- */
+.loading {
+    height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #555;
+    font-weight: 400;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+}
+
+.emptyText {
+    text-align: center;
+    color: #444;
+    font-size: 14px;
+    margin-top: 20px;
+}
+
+.logoutBtn {
+    background: none;
+    border: 1px solid var(--miners-red);
+    color: var(--miners-red);
+    margin: 20px 0 30px 0;
+    padding: 10px;
+    border-radius: 6px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    animation: fadeInSlide 0.8s ease-out both;
+    animation-delay: 0.4s;
+}
+
+@keyframes fadeInSlide {
+    from {
+        opacity: 0;
+        transform: translateY(15px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}

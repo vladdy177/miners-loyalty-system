@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import axios from "axios";
+import styles from "../styles/AdminLogin.module.css";
 
 const AdminLogin = ({ onLoginSuccess }) => {
     const [creds, setCreds] = useState({ username: "", password: "" });
@@ -7,33 +8,48 @@ const AdminLogin = ({ onLoginSuccess }) => {
 
     const handleLogin = async (e) => {
         e.preventDefault();
+        setError(""); // Сброс ошибки перед попыткой
         try {
             const apiUrl = import.meta.env.VITE_API_URL;
             const res = await axios.post(`${apiUrl}/api/admin/login`, creds);
             localStorage.setItem("admin_token", res.data.token);
             onLoginSuccess();
         } catch (err) {
-            setError("Wrong username or password", err);
+            setError("Wrong username or password. Access denied.", err);
         }
     };
 
     return (
-        <div style={{ height: "100vh", display: "flex", alignItems: "center", justifyContent: "center", backgroundColor: "#000" }}>
-            <form onSubmit={handleLogin} style={{ background: "#fff", padding: "40px", borderRadius: "8px", width: "300px" }}>
-                <h2 style={{ textAlign: "center", marginBottom: "20px" }}>MINERS ADMIN</h2>
-                <input
-                    type="text" placeholder="Username"
-                    onChange={e => setCreds({ ...creds, username: e.target.value })}
-                    style={{ width: "100%", padding: "10px", marginBottom: "10px" }}
-                />
-                <input
-                    type="password" placeholder="Password"
-                    onChange={e => setCreds({ ...creds, password: e.target.value })}
-                    style={{ width: "100%", padding: "10px", marginBottom: "20px" }}
-                />
-                <button type="submit" style={{ width: "100%", padding: "10px", background: "#FFEA00", border: "none", fontWeight: "bold" }}>LOG IN</button>
-                {error && <p style={{ color: "red", fontSize: "12px", marginTop: "10px" }}>{error}</p>}
-            </form>
+        <div className={styles.adminWrapper}>
+            <div className={styles.loginCard}>
+                <h2 className={styles.title}>Miners Admin</h2>
+                <p className={styles.subtitle}>Administrative Portal</p>
+
+                <form onSubmit={handleLogin} className={styles.form}>
+                    <input
+                        name="username"
+                        type="text"
+                        placeholder="Username"
+                        required
+                        className={styles.inputField}
+                        onChange={e => setCreds({ ...creds, username: e.target.value }, setError(''))}
+                    />
+                    <input
+                        name="password"
+                        type="password"
+                        placeholder="Password"
+                        required
+                        className={styles.inputField}
+                        onChange={e => setCreds({ ...creds, password: e.target.value }, setError(''))}
+                    />
+
+                    <button type="submit" className={styles.loginBtn}>
+                        Authorise
+                    </button>
+                </form>
+
+                {error && <div className={styles.errorBox}>{error}</div>}
+            </div>
         </div>
     );
 };

@@ -1,0 +1,99 @@
+.adminWrapper {
+    height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: #000;
+    font-family: 'TheMinersFont', sans-serif;
+}
+
+.loginCard {
+    background-color: #000;
+    padding: 50px 40px;
+    border-radius: 24px;
+    width: 100%;
+    max-width: 360px;
+    text-align: center;
+    border: 1px solid #222;
+    animation: fadeInSlide 0.6s ease-out;
+}
+
+.title {
+    color: white;
+    font-size: 5rem;
+    font-weight: 900;
+    margin-bottom: 8px;
+    text-transform: uppercase;
+}
+
+.subtitle {
+    color: #666;
+    margin-bottom: 30px;
+    font-weight: 200;
+    font-size: 1rem;
+}
+
+.form {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.inputField {
+    width: 100%;
+    padding: 14px;
+    background: #111;
+    border: 1px solid #333;
+    border-radius: 8px;
+    color: white;
+    margin-bottom: 15px;
+    outline: none;
+}
+
+.form .inputField:focus {
+    border-color: var(--miners-lime);
+}
+
+.loginBtn {
+    width: 100%;
+    padding: 16px;
+    background-color: var(--miners-lime);
+    color: var(--color-white);
+    border: none;
+    border-radius: 8px;
+    font-weight: 200;
+    text-transform: uppercase;
+    cursor: pointer;
+    transition: transform 0.1s, opacity 0.2s;
+}
+
+.loginBtn:hover {
+    opacity: 0.8;
+}
+
+.loginBtn:active {
+    transform: scale(0.97);
+}
+
+.errorBox {
+    background: rgba(206, 36, 64, 0.15);
+    color: var(--miners-red);
+    padding: 12px;
+    border-radius: 8px;
+    font-size: 13px;
+    margin-top: 20px;
+    border-left: 4px solid var(--miners-red);
+    text-align: left;
+}
+
+@keyframes fadeInSlide {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}

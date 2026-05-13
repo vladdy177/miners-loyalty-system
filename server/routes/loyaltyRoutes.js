@@ -33,9 +33,6 @@ router.post('/purchase', async (req, res) => {
             return res.status(400).json({ error: "Insufficient points" });
         }
 
-        // Deduct Points
-        await db.query('UPDATE loyalty_cards SET points_balance = points_balance - $1 WHERE id = $2', [reward.cost, user.card_id]);
-
         // Grant Reward
         if (reward.title.includes('STATUS')) {
             const tierName = reward.title.split(' ')[0];
@@ -46,6 +43,26 @@ router.post('/purchase', async (req, res) => {
                 [user.user_id, reward.id]
             );
         }
+
+        // Tier Check 
+        if (reward.title.includes('STATUS')) {
+            const targetTier = reward.title.split(' ')[0]; // 'SILVER' или 'GOLD'
+
+            if (targetTier === 'SILVER' && user.tier !== 'STANDARD') {
+                return res.status(400).json({ error: "Upgrade to SILVER is only for STANDARD members." });
+            }
+
+            if (targetTier === 'GOLD' && user.tier !== 'SILVER') {
+                return res.status(400).json({ error: "You must unlock SILVER status before purchasing GOLD." });
+            }
+
+            if (user.tier === 'GOLD') {
+                return res.status(400).json({ error: "You have already reached the maximum tier." });
+            }
+        }
+
+        // Deduct Points
+        await db.query('UPDATE loyalty_cards SET points_balance = points_balance - $1 WHERE id = $2', [reward.cost, user.card_id]);
 
         await db.query('INSERT INTO point_logs (loyalty_card_id, amount, reason) VALUES ($1, $2, $3)',
             [user.card_id, -reward.cost, `Purchased: ${reward.title}`]);

@@ -1,0 +1,170 @@
+.mainWrapper {
+    display: flex;
+    min-height: 100vh;
+    background-color: #000;
+    font-family: 'TheMinersFont', sans-serif;
+}
+
+/* IMAGE SIDE */
+.imageSide {
+    flex: 1.2;
+    /* Slightly wider than form */
+    background: url('/login-bg.jpg') center/cover no-repeat;
+    position: relative;
+}
+
+.imageOverlay {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    padding: 60px;
+    background: linear-gradient(to top, rgba(0, 0, 0, 0.8), transparent);
+    color: white;
+}
+
+.imageOverlay h1 {
+    font-size: 8rem;
+    font-weight: 900;
+    text-transform: uppercase;
+    line-height: 1;
+    margin-bottom: 10px;
+}
+
+/* FORM SIDE */
+.formSide {
+    flex: 1;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.formContent {
+    width: 100%;
+    max-width: 420px;
+    animation: fadeInSlide 0.8s ease-out both;
+}
+
+.formTitle {
+    color: white;
+    font-size: 2rem;
+    font-weight: 400;
+    margin-bottom: 8px;
+}
+
+.formSubtitle {
+    color: #666;
+    margin-bottom: 30px;
+    font-weight: 200;
+    font-size: 1rem;
+}
+
+/* ELEMENTS */
+.inputField {
+    width: 100%;
+    padding: 14px;
+    background: #111;
+    border: 1px solid #333;
+    border-radius: 8px;
+    color: white;
+    margin-bottom: 15px;
+    outline: none;
+}
+
+.inputField:focus {
+    border-color: var(--miners-orange);
+}
+
+.submitBtn {
+    width: 100%;
+    padding: 16px;
+    background-color: var(--miners-orange);
+    color: black;
+    border: none;
+    border-radius: 8px;
+    font-weight: 200;
+    text-transform: uppercase;
+    cursor: pointer;
+    transition: transform 0.1s, opacity 0.2s;
+}
+
+.submitBtn:hover {
+    opacity: 0.9;
+}
+
+.backBtn {
+    background: none;
+    border: none;
+    color: #888;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    cursor: pointer;
+    margin-bottom: 20px;
+    font-size: 14px;
+}
+
+.toggleText {
+    color: #666;
+    text-align: center;
+    margin-top: 25px;
+    font-size: 14px;
+}
+
+.linkBtn {
+    background: none;
+    border: none;
+    color: var(--miners-orange);
+    text-decoration: underline;
+    cursor: pointer;
+    font-weight: 700;
+    margin-left: 5px;
+}
+
+.logoutBtn   {
+    background: none;
+    border: 1px solid var(--miners-red);
+    color: var(--miners-red);
+    padding: 10px;
+    border-radius: 6px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+}
+
+.errorBox{
+    background: rgba(200, 16, 46, 0.1);
+    color: var(--miners-red);
+    padding: 12px;
+    border-radius: 8px;
+    font-size: 13px;
+    margin-bottom: 20px;
+    border-left: 4px solid var(--miners-red);
+    text-align: left;
+}
+
+@keyframes fadeInSlide {
+    from {
+        opacity: 0;
+        transform: translateY(15px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* MOBILE RESPONSIVENESS */
+@media (max-width: 700px) {
+    .imageSide {
+        display: none;
+        /* Hide image on mobile to save space */
+    }
+
+    .formSide {
+        padding: 20px;
+    }
+}

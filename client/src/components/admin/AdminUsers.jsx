@@ -2,12 +2,14 @@ import React, { useState, useEffect } from "react";
 import axios from "axios";
 import { Pencil, Save, X, Search, Filter, MapPin, Mail } from "lucide-react";
 import styles from "../styles/AdminUsers.module.css";
+import Popup from "../Popup";
 
 const AdminUsers = () => {
     const [users, setUsers] = useState([]);
     const [branches, setBranches] = useState([]);
     const [editingId, setEditingId] = useState(null);
     const [editData, setEditData] = useState({ points: 0, tier: "" });
+    const [popup, setPopup] = useState({ isOpen: false, type: 'info', title: '', message: '' });
     // FILTERING
     const [searchTerm, setSearchTerm] = useState("");
     const [filterCountry, setFilterCountry] = useState("all");
@@ -33,6 +35,9 @@ const AdminUsers = () => {
         return () => controller.abort();
     }, [apiUrl, refreshTrigger]);
 
+    const showMessage = (type, title, message) => {
+        setPopup({ isOpen: true, type, title, message });
+    };
 
     // 1. Extract Unique lists for filters
     const countries = [...new Set(branches.map(b => b.country))];
@@ -62,9 +67,9 @@ const AdminUsers = () => {
                 tier: editData.tier
             });
             setEditingId(null);
-            setRefreshTrigger(prev => prev + 1); // Increment to trigger re-fetch
+            setRefreshTrigger(prev => prev + 1);
         } catch (err) {
-            alert("Update failed", err);
+            showMessage('error', 'Update Failed', err.response?.data?.error || "Failed to save the user");
         }
     };
 
@@ -105,7 +110,7 @@ const AdminUsers = () => {
                         <div className={styles.userName}>{user.first_name} {user.last_name}</div>
                         <div className={styles.userEmail}><Mail size={12} />{user.email}</div>
                         <div className={styles.branchTag}>
-                            <MapPin size={12} /> {user.home_branch}
+                            <MapPin size={12} /> {user.home_branch || 'No Branch'}
                         </div>
                     </div>
 
@@ -138,7 +143,7 @@ const AdminUsers = () => {
                             </div>
                             <div
                                 className={styles.tierBadge}
-                                style={{ background: user.tier === 'CREW' ? 'var(--miners-yellow)' : 'var(--miners-gray)' }}
+                                style={{ color: user.tier === 'CREW' ? 'var(--miners-orange)' : 'var(--color-white)' }}
                             >
                                 {user.tier}
                             </div>
@@ -149,6 +154,13 @@ const AdminUsers = () => {
                     )}
                 </div>
             ))}
+            <Popup
+                isOpen={popup.isOpen}
+                type={popup.type}
+                title={popup.title}
+                message={popup.message}
+                onClose={() => setPopup({ ...popup, isOpen: false })}
+            />
         </div>
     );
 };

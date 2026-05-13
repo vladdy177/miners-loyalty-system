@@ -106,13 +106,13 @@ router.get('/vouchers', async (req, res) => {
 
 // POST: Create new voucher
 router.post('/vouchers', async (req, res) => {
-    const { title, description, cost, discount_type, discount_value, image_url, is_crew_only } = req.body;
+    const { title, description, cost, discount_type, discount_value, image_url, is_crew_only, valid_duration_days } = req.body;
     try {
         const query = `
-            INSERT INTO voucher_templates (title, description, cost, discount_type, discount_value, image_url, is_crew_only)
-            VALUES ($1, $2, $3, $4, $5, $6, $7) RETURNING *
+            INSERT INTO voucher_templates (title, description, cost, discount_type, discount_value, image_url, is_crew_only, valid_duration_days )
+            VALUES ($1, $2, $3, $4, $5, $6, $7, $8) RETURNING *
         `;
-        const result = await db.query(query, [title, description, cost, discount_type, discount_value, image_url, is_crew_only]);
+        const result = await db.query(query, [title, description, cost, discount_type, discount_value, image_url, is_crew_only, valid_duration_days || 30]);
         res.status(201).json(result.rows[0]);
     } catch (err) {
         console.error(err);

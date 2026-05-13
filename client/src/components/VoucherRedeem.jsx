@@ -1,41 +1,53 @@
 import React, { useState, useEffect } from "react";
 import { QRCodeSVG } from "qrcode.react";
-import { Timer, X } from "lucide-react";
+import { X, Timer } from "lucide-react";
+import styles from "./styles/VoucherRedeem.module.css";
 
-const VoucherRedeem = ({ voucher, onCancel }) => {
-    const [timeLeft, setTimeLeft] = useState(120); // 2 minutes in seconds
+const VoucherRedeem = ({ voucher, expiryTime, onCancel }) => {
+    const [timeLeft, setTimeLeft] = useState(0);
 
     useEffect(() => {
-        if (timeLeft <= 0) return onCancel();
-        const timer = setInterval(() => setTimeLeft(prev => prev - 1), 1000);
+        const calculate = () => {
+            const diff = Math.max(0, Math.floor((expiryTime - Date.now()) / 1000));
+            setTimeLeft(diff);
+        };
+
+        calculate();
+        const timer = setInterval(calculate, 1000);
         return () => clearInterval(timer);
-    }, [timeLeft]);
+    }, [expiryTime]);
+
+    const formatTime = (seconds) => {
+        const m = Math.floor(seconds / 60);
+        const s = seconds % 60;
+        return `${m}:${s.toString().padStart(2, '0')}`;
+    };
 
     return (
-        <div style={overlayStyle}>
-            <div style={modalStyle}>
-                <button onClick={onCancel} style={closeBtn}><X /></button>
-                <h2 style={{ fontWeight: 900 }}>{voucher.title}</h2>
-                <p>Show this to the barista</p>
+        <div className={styles.overlay}>
+            <div className={styles.modal}>
+                <button className={styles.closeBtn} onClick={onCancel}><X /></button>
 
-                <div style={qrBox}>
-                    {/* The QR code is a secure combination of Voucher ID and User ID */}
-                    <QRCodeSVG value={`REDEEM:${voucher.id}`} size={200} />
+                <p className={styles.topLabel}>Voucher Activation</p>
+                <h2 className={styles.title}>{voucher.title}</h2>
+
+                <div className={styles.qrBox}>
+                    <QRCodeSVG value={`REDEEM:${voucher.id}`} size={200} level="H" />
+                    <p className={styles.qrSub}>{voucher.id.substring(0, 8).toUpperCase()}</p>
                 </div>
 
-                <div style={timerStyle}>
-                    <Timer size={16} />
-                    <span>Expires in {Math.floor(timeLeft / 60)}:{(timeLeft % 60).toString().padStart(2, '0')}</span>
+                <div className={styles.timerContainer}>
+                    <Timer size={20} className={styles.timerIcon} />
+                    <span className={styles.timeText}>{formatTime(timeLeft)}</span>
                 </div>
+
+                <p className={styles.warning}>
+                    Show this screen to the barista. <br />
+                    The code will expire automatically.
+                </p>
             </div>
         </div>
     );
 };
-
-const overlayStyle = { position: 'fixed', top: 0, left: 0, width: '100%', height: '100%', background: 'rgba(0,0,0,0.9)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000 };
-const modalStyle = { background: '#FFEA00', padding: '30px', borderRadius: '10px', textAlign: 'center', color: '#000', width: '300px' };
-const qrBox = { background: '#fff', padding: '15px', borderRadius: '8px', margin: '20px 0' };
-const timerStyle = { display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', fontWeight: 'bold' };
-const closeBtn = { position: 'absolute', top: '20px', right: '20px', background: 'none', border: 'none', color: '#fff', cursor: 'pointer' };
 
 export default VoucherRedeem;
