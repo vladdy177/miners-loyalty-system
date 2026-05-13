@@ -96,7 +96,7 @@
     background-color: var(--miners-red); 
     color: #fff; }
 
-/* Кнопка отмены - тёмная, чтобы не отвлекать */
+/* dark cancel button so it doesn't compete with the confirm action */
 .cancelBtn {
     background-color: #222;
     color: #fff;

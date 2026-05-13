@@ -41,6 +41,10 @@ const Register = ({ onRegistrationSuccess }) => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    if (!formData.birthDay || !formData.birthMonth || !formData.birthYear || formData.birthYear.length < 4) {
+      setMessage("Please enter a valid birth date.");
+      return;
+    }
     try {
       const formattedDate = `${formData.birthYear}-${formData.birthMonth.padStart(2, '0')}-${formData.birthDay.padStart(2, '0')}`;
       const dataToSend = { ...formData, birthDate: formattedDate };

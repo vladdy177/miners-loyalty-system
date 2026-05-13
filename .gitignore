@@ -5,6 +5,7 @@ dist/
 
 # Secrets
 .env
+/scripts
 
 # Logs 
 npm-debug.log*

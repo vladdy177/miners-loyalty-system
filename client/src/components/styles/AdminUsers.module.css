@@ -5,7 +5,7 @@
     gap: 15px;
 }
 
-/* Панель инструментов: Поиск + 3 Фильтра */
+/* search + filter toolbar */
 .toolbar {
     display: flex;
     width: 100%;

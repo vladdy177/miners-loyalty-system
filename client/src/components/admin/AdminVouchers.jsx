@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import axios from "axios";
+import adminApi from "../../utils/adminApi";
 import { Plus, Trash2, Pencil, Save, X, Mail } from "lucide-react";
 import styles from "../styles/AdminVouchers.module.css";
 import Popup from "../Popup";
@@ -8,7 +8,7 @@ const AdminVouchers = () => {
     const [vouchers, setVouchers] = useState([]);
     const [editingId, setEditingId] = useState(null);
     const [refreshTrigger, setRefreshTrigger] = useState(0);
-    const [targetSegment, setTargetSegment] = useState({ gender: 'all', branchId: 'all', tier: 'all' });
+    const [targetSegment, setTargetSegment] = useState({ gender: 'all', tier: 'all', country: 'all', city: 'all', branchId: 'all' });
     const [selectedTpl, setSelectedTpl] = useState("");
     const [popup, setPopup] = useState({ isOpen: false, type: 'info', title: '', message: '', onConfirm: null });
     const [branches, setBranches] = useState([]);
@@ -26,18 +26,27 @@ const AdminVouchers = () => {
 
     const apiUrl = import.meta.env.VITE_API_URL;
 
+    const countries = [...new Set(branches.map(b => b.country))].sort();
+    const cities = [...new Set(
+        branches.filter(b => targetSegment.country === 'all' || b.country === targetSegment.country)
+            .map(b => b.city)
+    )].sort();
+    const filteredBranches = branches.filter(b =>
+        targetSegment.city === 'all' || b.city === targetSegment.city
+    );
+
     useEffect(() => {
         const controller = new AbortController();
-        axios.get(`${apiUrl}/api/admin/vouchers`, { signal: controller.signal })
+        adminApi.get(`${apiUrl}/api/admin/vouchers`, { signal: controller.signal })
             .then(res => setVouchers(res.data))
             .catch(err => { if (err.name !== 'CanceledError') console.error(err); });
-        axios.get(`${apiUrl}/api/branches`)
+        adminApi.get(`${apiUrl}/api/branches`)
             .then(res => setBranches(res.data))
             .catch(err => console.error("Error fetching branches", err));
         return () => controller.abort();
     }, [apiUrl, refreshTrigger]);
 
-    // Fixed showMessage to handle optional confirmation logic
+    // onConfirm is optional — used for delete confirmations, null for plain messages
     const showMessage = (type, title, message, onConfirm = null) => {
         setPopup({ isOpen: true, type, title, message, onConfirm });
     };
@@ -46,10 +55,10 @@ const AdminVouchers = () => {
         e.preventDefault();
         try {
             if (editingId) {
-                await axios.put(`${apiUrl}/api/admin/vouchers/${editingId}`, formData);
+                await adminApi.put(`${apiUrl}/api/admin/vouchers/${editingId}`, formData);
                 showMessage('success', 'Updated', 'Voucher updated successfully');
             } else {
-                await axios.post(`${apiUrl}/api/admin/vouchers`, formData);
+                await adminApi.post(`${apiUrl}/api/admin/vouchers`, formData);
                 showMessage('success', 'Created', 'New reward added to the shop');
             }
             resetForm();
@@ -62,7 +71,7 @@ const AdminVouchers = () => {
     const handleBlast = async () => {
         if (!selectedTpl) return showMessage('warning', 'Selection Required', 'Please select a voucher template first');
         try {
-            const res = await axios.post(`${apiUrl}/api/admin/vouchers/assign-bulk`, {
+            const res = await adminApi.post(`${apiUrl}/api/admin/vouchers/assign-bulk`, {
                 templateId: selectedTpl,
                 segment: targetSegment
             });
@@ -74,11 +83,14 @@ const AdminVouchers = () => {
 
     const executeDelete = async (id) => {
         try {
-            await axios.delete(`${apiUrl}/api/admin/vouchers/${id}`);
+            const res = await adminApi.delete(`${apiUrl}/api/admin/vouchers/${id}`);
             setRefreshTrigger(prev => prev + 1);
-            showMessage('success', 'Deleted', 'The reward has been removed from the system.');
+            const msg = res.data.refunded > 0
+                ? `Reward removed. ${res.data.refunded} user(s) received a full points refund.`
+                : 'The reward has been removed from the system.';
+            showMessage('success', 'Deleted', msg);
         } catch (err) {
-            showMessage('error', 'Delete Failed', `This item is already linked to users and cannot be deleted.(${err})`);
+            showMessage('error', 'Delete Failed', err.response?.data?.error || 'Failed to delete reward.');
         }
     };
 
@@ -117,7 +129,6 @@ const AdminVouchers = () => {
 
     return (
         <div className={styles.container}>
-            {/* VOUCHER FORM */}
             <div className={styles.addCard}>
                 <h2 className={styles.adminSectionTitle}>{editingId ? "EDIT REWARD" : "CREATE NEW REWARD"}</h2>
                 <form onSubmit={handleSubmit} className={styles.formContent}>
@@ -234,12 +245,11 @@ const AdminVouchers = () => {
                 </form>
             </div>
 
-            {/* SEGMENTATION CARD */}
             <div className={styles.addCard} style={{ borderTop: '5px solid var(--miners-orange)' }}>
                 <h2 className={styles.adminSectionTitle}>TARGETED CAMPAIGN</h2>
                 <p className={styles.sectionHint}>Manually assign a voucher to a specific user segment.</p>
                 <div className={styles.formContent}>
-                    <div className={styles.inputGroup, styles.segment}>
+                    <div className={`${styles.inputGroup} ${styles.segment}`}>
                         <select value={selectedTpl} onChange={e => setSelectedTpl(e.target.value)} className={styles.inputMain}>
                             <option value="">-- Choose Reward Template --</option>
                             {vouchers.map(v => <option key={v.id} value={v.id}>{v.title} ({v.cost} pts)</option>)}
@@ -258,12 +268,30 @@ const AdminVouchers = () => {
                             <option value="CREW">CREW</option>
                         </select>
                         <select
+                            value={targetSegment.country}
+                            onChange={e => setTargetSegment({ ...targetSegment, country: e.target.value, city: 'all', branchId: 'all' })}
+                            className={styles.inputSelect}
+                        >
+                            <option value="all">ALL COUNTRIES</option>
+                            {countries.map(c => <option key={c} value={c}>{c}</option>)}
+                        </select>
+                        <select
+                            value={targetSegment.city}
+                            disabled={targetSegment.country === 'all'}
+                            onChange={e => setTargetSegment({ ...targetSegment, city: e.target.value, branchId: 'all' })}
+                            className={styles.inputSelect}
+                        >
+                            <option value="all">ALL CITIES</option>
+                            {cities.map(c => <option key={c} value={c}>{c}</option>)}
+                        </select>
+                        <select
                             value={targetSegment.branchId}
+                            disabled={targetSegment.city === 'all'}
                             onChange={e => setTargetSegment({ ...targetSegment, branchId: e.target.value })}
                             className={styles.inputSelect}
                         >
                             <option value="all">ALL BRANCHES</option>
-                            {branches.map(b => (
+                            {filteredBranches.map(b => (
                                 <option key={b.id} value={b.id}>{b.name}</option>
                             ))}
                         </select>
@@ -274,7 +302,6 @@ const AdminVouchers = () => {
                 </div>
             </div>
 
-            {/* VOUCHER LIST */}
             <div className={styles.vouchersList}>
                 {vouchers.map(v => (
                     <div key={v.id} className={styles.voucherCard} style={{ borderLeft: v.is_crew_only ? '6px solid var(--miners-orange)' : '6px solid #e2e8f0' }}>

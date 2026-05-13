@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import axios from "axios";
+import adminApi from "../../utils/adminApi";
 import { Pencil, Save, X, Search, Filter, MapPin, Mail } from "lucide-react";
 import styles from "../styles/AdminUsers.module.css";
 import Popup from "../Popup";
@@ -10,12 +10,10 @@ const AdminUsers = () => {
     const [editingId, setEditingId] = useState(null);
     const [editData, setEditData] = useState({ points: 0, tier: "" });
     const [popup, setPopup] = useState({ isOpen: false, type: 'info', title: '', message: '' });
-    // FILTERING
     const [searchTerm, setSearchTerm] = useState("");
     const [filterCountry, setFilterCountry] = useState("all");
     const [filterCity, setFilterCity] = useState("all");
     const [filterBranch, setFilterBranch] = useState("all");
-    // REFRESH TRIGGER
     const [refreshTrigger, setRefreshTrigger] = useState(0);
     const apiUrl = import.meta.env.VITE_API_URL;
 
@@ -24,8 +22,8 @@ const AdminUsers = () => {
         const fetchData = async () => {
             try {
                 const [uRes, bRes] = await Promise.all([
-                    axios.get(`${apiUrl}/api/admin/users`, { signal: controller.signal }),
-                    axios.get(`${apiUrl}/api/branches`, { signal: controller.signal })
+                    adminApi.get(`${apiUrl}/api/admin/users`, { signal: controller.signal }),
+                    adminApi.get(`${apiUrl}/api/branches`, { signal: controller.signal })
                 ]);
                 setUsers(uRes.data);
                 setBranches(bRes.data);
@@ -39,16 +37,13 @@ const AdminUsers = () => {
         setPopup({ isOpen: true, type, title, message });
     };
 
-    // 1. Extract Unique lists for filters
     const countries = [...new Set(branches.map(b => b.country))];
     const cities = [...new Set(branches.filter(b => filterCountry === "all" || b.country === filterCountry).map(b => b.city))];
     const branchList = branches.filter(b => filterCity === "all" || b.city === filterCity);
 
-    // 2. THE FILTERING LOGIC
+    // users only carry home_branch name, so we match against the branches list to get city/country
     const filteredUsers = users.filter(user => {
         const matchesSearch = (user.first_name + " " + user.last_name + user.email).toLowerCase().includes(searchTerm.toLowerCase());
-
-        // Find the branch object for this user to get its city/country
         const userBranchObj = branches.find(b => b.name === user.home_branch);
 
         const matchesCountry = filterCountry === "all" || userBranchObj?.country === filterCountry;
@@ -58,10 +53,9 @@ const AdminUsers = () => {
         return matchesSearch && matchesCountry && matchesCity && matchesBranch;
     });
 
-    // USER POINTS AND TIER EDIT
     const handleSave = async (userId) => {
         try {
-            await axios.post(`${apiUrl}/api/admin/update-user`, {
+            await adminApi.post(`${apiUrl}/api/admin/update-user`, {
                 userId,
                 points: editData.points,
                 tier: editData.tier
@@ -81,10 +75,9 @@ const AdminUsers = () => {
     return (
         <div className={styles.listContainer}>
             <div className={styles.toolbar}>
-                {/* Search */}
                 <input placeholder="Search..." value={searchTerm} onChange={e => setSearchTerm(e.target.value)} className={styles.searchField} />
 
-                {/* Hierarchical Dropdowns */}
+                {/* cascade: picking country resets city and branch */}
                 <select value={filterCountry} onChange={e => { setFilterCountry(e.target.value); setFilterCity("all"); setFilterBranch("all"); }}>
                     <option value="all">All Countries</option>
                     {countries.map(c => <option key={c} value={c}>{c}</option>)}
@@ -101,7 +94,6 @@ const AdminUsers = () => {
                 </select>
             </div>
 
-            {/* List Header/Stats */}
             <p className={styles.resultsCount}>Showing {filteredUsers.length} customers</p>
 
             {filteredUsers.map(user => (

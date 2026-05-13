@@ -1,4 +1,4 @@
-/* --- GLOBAL LAYOUT --- */
+/* full page wrapper — black background like the brand */
 .profilePage {
     max-width: 100%;
     width: 100%;
@@ -11,6 +11,7 @@
     align-items: center;
 }
 
+/* two-column layout: card on the left, content on the right */
 .splitLayout {
     display: flex;
     width: 100%;
@@ -18,7 +19,7 @@
     gap: 60px;
 }
 
-/* --- LEFT SIDE: THE CARD (YOUR DESIGN) --- */
+/* left side stays sticky so the card doesn't scroll away */
 .leftSide {
     flex: 1;
     position: sticky;
@@ -26,6 +27,7 @@
     height: fit-content;
 }
 
+/* the loyalty card itself */
 .card {
     background: linear-gradient(145deg, #111, #000);
     border: 1px solid #222;
@@ -60,6 +62,7 @@
     margin-bottom: 30px;
 }
 
+/* white box behind the QR code for scan contrast */
 .qrContainer {
     background-color: #fff;
     padding: 15px;
@@ -75,6 +78,7 @@
     font-size: 14px;
 }
 
+/* 2-column grid for points and tier stats */
 .statsGrid {
     display: grid;
     grid-template-columns: 1fr 1fr;
@@ -90,6 +94,7 @@
     align-items: center;
 }
 
+/* benefits row spans full width under the 2-column stats */
 .fullWidth {
     grid-column: span 2;
     border-top: 1px solid #1a1a1a;
@@ -113,6 +118,7 @@
     text-transform: uppercase;
 }
 
+/* points get the brand orange */
 .points {
     color: var(--miners-orange);
 }
@@ -126,12 +132,12 @@
     letter-spacing: 0.5px;
 }
 
-/* --- GOOGLE WALLET (YOUR DESIGN) --- */
+/* Google Wallet button */
 .walletButtonContainer {
     margin-top: 25px;
     text-align: center;
     animation: fadeInSlide 0.8s ease-out both;
-    animation-delay: 0.5s;  
+    animation-delay: 0.5s;
 }
 
 .walletButtonContainer img {
@@ -142,7 +148,6 @@
     transform: scale(0.95);
 }
 
-/* --- LOGOUT BUTTON (YOUR DESIGN) --- */
 .logoutBtn {
     margin: 40px auto 0 auto;
     background: none;
@@ -164,11 +169,12 @@
     animation-delay: 0.5s;
 }
 
-/* --- RIGHT SIDE: CONTENT --- */
+/* right side: inventory + shop tabs */
 .rightSide {
     flex: 1.4;
 }
 
+/* tab bar is sticky so it doesn't disappear when scrolling down the voucher list */
 .tabs {
     display: flex;
     justify-content: center;
@@ -205,7 +211,7 @@
     color: #444;
 }
 
-/* --- VOUCHER CARDS (YOUR DESIGN COMBINED WITH TIMER) --- */
+/* voucher cards in the inventory */
 .voucherGrid {
     display: flex;
     flex-direction: column;
@@ -225,9 +231,9 @@
 
 .vImageWrapper {
     height: 140px;
-        width: 100%;
-        position: relative;
-        background: #000;
+    width: 100%;
+    position: relative;
+    background: #000;
 }
 
 .vImageWrapper img {
@@ -237,7 +243,7 @@
     opacity: 0.7;
 }
 
-/* Functional Timer Overlay */
+/* orange tinted overlay that appears when the 3-min countdown is running */
 .timerOverlay {
     position: absolute;
     top: 0;
@@ -265,6 +271,7 @@
     letter-spacing: 2px;
 }
 
+/* big countdown number */
 .timerBox h2 {
     font-size: 4rem;
     font-weight: 900;
@@ -304,6 +311,7 @@
     margin-bottom: 20px;
 }
 
+/* orange = activate now, outlined = already active, show QR */
 .btnActivate,
 .btnShow {
     width: 100%;
@@ -328,7 +336,7 @@
     color: var(--miners-orange);
 }
 
-/* --- HISTORY SECTION --- */
+/* used vouchers history */
 .sectionTitle {
     font-size: 1.5rem;
     font-weight: 400;
@@ -362,7 +370,7 @@
     color: var(--color-white);
 }
 
-/* --- STATES --- */
+/* loading and empty states */
 .loading {
     height: 100vh;
     display: flex;
@@ -381,7 +389,7 @@
     margin-top: 20px;
 }
 
-/* --- RESPONSIVENESS --- */
+/* stacks to single column on mobile */
 @media (max-width: 700px) {
     .splitLayout {
         flex-direction: column;

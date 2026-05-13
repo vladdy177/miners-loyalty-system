@@ -35,11 +35,9 @@ const Market = ({ userEmail, userPoints, onPurchaseSuccess, userTier }) => {
                 rewardId: rewardId
             });
             showMessage('success', 'Success!', `You have unlocked ${title}. Check your wallet!`);
-            screen.width < 700 ? window.scrollTo({ top: 743, behavior: "smooth" }) : window.scrollTo({ top: 0, behavior: "smooth" });
             onPurchaseSuccess();
         } catch (err) {
             showMessage('error', 'Purchase Failed', err.response?.data?.error || "Transaction failed");
-            screen.width < 700 ? window.scrollTo({ top: 743, behavior: "smooth" }) : window.scrollTo({ top: 0, behavior: "smooth" });
         }
     };
 

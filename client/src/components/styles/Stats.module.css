@@ -1,3 +1,4 @@
+/* two-column grid, drops to one on mobile */
 .statsGrid {
     display: grid;
     grid-template-columns: 1fr 1fr;
@@ -5,6 +6,7 @@
     padding-bottom: 40px;
 }
 
+/* each chart lives in one of these white cards */
 .card {
     background: white;
     padding: 25px;
@@ -23,12 +25,14 @@
     letter-spacing: 0.5px;
 }
 
+/* constrains pie/doughnut charts so they don't go full width */
 .chartContainer {
     width: 100%;
     max-width: 300px;
     margin: 0 auto;
 }
 
+/* leftover from the old branch list — kept in case we need it again */
 .branchList {
     display: flex;
     flex-direction: column;
@@ -52,11 +56,18 @@
     color: var(--miners-orange);
 }
 
+/* small caption under the point economy chart */
 .hint {
     font-size: 12px;
     margin-top: 15px;
     color: #64748b;
     line-height: 1.4;
+}
+
+.loading {
+    padding: 40px;
+    text-align: center;
+    color: #999;
 }
 
 @media (max-width: 700px) {

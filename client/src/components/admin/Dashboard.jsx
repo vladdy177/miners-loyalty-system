@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import axios from "axios";
+import adminApi from "../../utils/adminApi";
 import { Users, Coins, Ticket, MapPin, TrendingUp, UserCheck } from "lucide-react";
 import styles from "../styles/Dashboard.module.css";
 
@@ -8,7 +8,7 @@ const Dashboard = () => {
     const apiUrl = import.meta.env.VITE_API_URL;
 
     useEffect(() => {
-        axios.get(`${apiUrl}/api/admin/stats-summary`).then(res => setData(res.data));
+        adminApi.get(`${apiUrl}/api/admin/stats-summary`).then(res => setData(res.data));
     }, [apiUrl]);
 
     if (!data) return <p>Loading Dashboard...</p>;
@@ -45,7 +45,7 @@ const Dashboard = () => {
             bg: "var(--miners-magenta)"
         },
         {
-            title: "Avg. Customer Age", // Bonus card!
+            title: "Avg. Customer Age",
             value: `${data.avgAge} YRS`,
             icon: <UserCheck color="white" />,
             bg: "var(--miners-pink-light)"
@@ -72,7 +72,6 @@ const Dashboard = () => {
                 ))}
             </div>
 
-            {/* Quick action or message */}
             <div className={styles.welcomeBox}>
                 <h3>System Status: Online</h3>
                 <p>Google Wallet API is synced. All systems operational.</p>

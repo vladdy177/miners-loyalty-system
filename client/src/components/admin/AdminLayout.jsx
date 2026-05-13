@@ -35,7 +35,7 @@ const AdminLayout = ({ onLogout }) => {
 
     const handleTabClick = (id) => {
         setActiveTab(id);
-        setIsMenuOpen(false); // Закрываем меню после выбора вкладки на мобилке
+        setIsMenuOpen(false); // close the menu when a tab is selected on mobile
     };
 
     return (

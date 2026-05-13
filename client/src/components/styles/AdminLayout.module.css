@@ -97,8 +97,7 @@
 
 /* ---MOBILE--- */
 .mobileMenuBtn {
-    display: none;
-    /* Прячем на десктопе */
+    display: none; /* hidden on desktop, shown via media query */
     position: fixed;
     top: 20px;
     right: 20px;
@@ -115,7 +114,7 @@
     display: none;
 }
 
-/* --- МОБИЛЬНАЯ ВЕРСТКА --- */
+/* mobile layout */
 @media (max-width: 700px) {
     .mobileMenuBtn {
         display: flex;

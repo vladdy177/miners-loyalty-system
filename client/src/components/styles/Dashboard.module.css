@@ -1,7 +1,9 @@
+/* font comes from global CSS */
 .container {
     font-family: 'TheMinersFont', sans-serif;
 }
 
+/* responsive grid — narrows to 1 column on mobile */
 .grid {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
@@ -9,6 +11,7 @@
     margin-bottom: 30px;
 }
 
+/* each KPI card gets its background color set inline from the component */
 .card {
     padding: 25px;
     border-radius: 16px;
@@ -25,6 +28,7 @@
     transform: translateY(-5px);
 }
 
+/* icon sits in a semi-transparent circle */
 .iconWrapper {
     background: rgba(255, 255, 255, 0.2);
     padding: 15px;
@@ -38,7 +42,7 @@
     color: inherit;
 }
 
-/* Adjust text color based on background light/dark */
+/* label inherits whatever text color the card has */
 .cardTitle {
     font-size: 11px;
     font-weight: 400;
@@ -54,6 +58,7 @@
     margin: 5px 0 0 0;
 }
 
+/* status box at the bottom of the dashboard */
 .welcomeBox {
     background: white;
     padding: 30px;

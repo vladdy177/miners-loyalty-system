@@ -8,7 +8,7 @@ const AdminLogin = ({ onLoginSuccess }) => {
 
     const handleLogin = async (e) => {
         e.preventDefault();
-        setError(""); // Сброс ошибки перед попыткой
+        setError("");
         try {
             const apiUrl = import.meta.env.VITE_API_URL;
             const res = await axios.post(`${apiUrl}/api/admin/login`, creds);

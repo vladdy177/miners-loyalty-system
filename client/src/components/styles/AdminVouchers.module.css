@@ -37,22 +37,22 @@
 
 .inputGroup {
     display: flex;
-    gap: 20px;
+    gap: 16px;
     flex-wrap: wrap;
 }
 
-.segment{
+.segment {
     display: flex;
     flex-direction: column;
     gap: 10px;
-    justify-content: end;
+    justify-content: flex-end;
 }
 
 .inputWithLabel {
     display: flex;
     flex-direction: column;
     flex: 1;
-    min-width: 100px;
+    min-width: 140px;
 }
 
 .fieldLabel {
@@ -74,6 +74,8 @@
     font-family: inherit;
     outline: none;
     background: #fff;
+    width: 100%;
+    box-sizing: border-box;
 }
 
 .textarea {
@@ -85,6 +87,7 @@
     display: flex;
     flex-direction: row-reverse;
     justify-content: space-between;
+    gap: 10px;
 }
 
 .submitBtn {
@@ -98,9 +101,9 @@
     display: flex;
     align-items: center;
     gap: 10px;
-}   
+}
 
-.cancelBtn{
+.cancelBtn {
     background: var(--color-black);
     color: #fff;
     border: none;
@@ -119,10 +122,11 @@
     border-radius: 8px;
     font-weight: 700;
     cursor: pointer;
-    max-width: fit-content;
+    align-self: flex-start;
 }
 
-/* LIST CARDS */
+/* LIST */
+
 .vouchersList {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(500px, 1fr));
@@ -135,9 +139,11 @@
     padding: 15px;
     display: flex;
     align-items: center;
+    gap: 0;
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.03);
     animation: fadeInSlide 0.8s ease-out both;
     animation-delay: 0.4s;
+    overflow: hidden;
 }
 
 .voucherInfo {
@@ -145,6 +151,7 @@
     gap: 20px;
     align-items: center;
     flex: 1;
+    min-width: 0;
 }
 
 .vImgPreview {
@@ -165,8 +172,17 @@
 .voucherDesc {
     display: flex;
     flex-direction: column;
-    height: 100px;
+    min-height: 80px;
     justify-content: space-between;
+    gap: 6px;
+    min-width: 0;
+}
+
+.titleRow {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
 }
 
 .voucherDesc h3 {
@@ -181,6 +197,7 @@
     font-size: 13px;
     color: #666;
     display: -webkit-box;
+    -webkit-line-clamp: 2;
     -webkit-box-orient: vertical;
     overflow: hidden;
 }
@@ -192,6 +209,7 @@
     font-size: 11px;
     font-weight: 400;
     color: #000;
+    flex-wrap: wrap;
 }
 
 .dot {
@@ -206,12 +224,15 @@
     padding: 2px 8px;
     border-radius: 4px;
     font-weight: 700;
+    white-space: nowrap;
 }
 
 .actions {
     display: flex;
     flex-direction: column;
     gap: 10px;
+    flex-shrink: 0;
+    margin-left: 10px;
 }
 
 .editBtn {
@@ -236,7 +257,7 @@
     background: none;
 }
 
-.deleteBtn:hover{
+.deleteBtn:hover {
     background: var(--miners-pink-light);
 }
 
@@ -245,64 +266,91 @@
         opacity: 0;
         transform: translateY(15px);
     }
-
     to {
         opacity: 1;
         transform: translateY(0);
     }
 }
 
+/* Tablet: sidebar + content together is around 900-1100px */
+@media (max-width: 1100px) {
+    .vouchersList {
+        grid-template-columns: 1fr;
+    }
+
+    .vImgPreview {
+        width: 140px;
+        height: 90px;
+    }
+}
+
+/* Mobile */
 @media (max-width: 700px) {
-    #segmentation{
+    .addCard {
+        padding: 16px;
+    }
+
+    .inputGroup {
         flex-direction: column;
+        gap: 12px;
+    }
+
+    .inputWithLabel {
+        min-width: unset;
+        width: 100%;
+    }
+
+    .formActions {
+        flex-direction: column-reverse;
+    }
+
+    .submitBtn,
+    .cancelBtn {
+        width: 100%;
+        justify-content: center;
+    }
+
+    .blastBtn {
+        width: 100%;
+        align-self: stretch;
+        text-align: center;
     }
 
     .vouchersList {
         grid-template-columns: 1fr;
-        /* Строго одна колонка */
     }
 
     .voucherCard {
-        padding: 15px;
-        gap: 15px;
+        padding: 12px;
+        align-items: flex-start;
     }
 
     .vImgPreview {
-        width: 80px;
-        height: 80px;
-    }
-
-    .titleRow h3 {
-        font-size: 16px;
-    }
-
-    .titleRow {
-        display: flex;
-        flex-direction: column-reverse;
-        gap: 5px;
-    }
-    .crewBadge {
-        width: max-content;
-    }
-
-    .vShortDesc {
-        font-size: 12px;
-        font-weight: 200;
-    }
-    
-    .voucherDesc h3 {
-        font-size: 14px;
+        width: 72px;
+        height: 72px;
+        border-radius: 8px;
     }
 
     .voucherDesc {
-        display: flex;
-        flex-direction: column;
-        height: 80px;
-        justify-content: space-between;
+        min-height: 72px;
+    }
+
+    .titleRow {
+        flex-direction: column-reverse;
+        align-items: flex-start;
+        gap: 4px;
+    }
+
+    .voucherDesc h3 {
+        font-size: 13px;
+    }
+
+    .vShortDesc {
+        font-size: 11px;
     }
 
     .actions {
-        flex-direction: row;
-        /* На мобилке кнопки в ряд, чтобы было удобнее тыкать */
+        flex-direction: column;
+        margin-left: 6px;
     }
 }

@@ -27,7 +27,6 @@ const Profile = ({ email, onLogout }) => {
         setRefreshTrigger(prev => prev + 1);
     }, []);
 
-    // Функция форматирования времени (ММ:СС)
     const formatTimeLeft = (expiry) => {
         const totalSeconds = Math.max(0, Math.floor((expiry - now) / 1000));
         const m = Math.floor(totalSeconds / 60);
@@ -35,7 +34,6 @@ const Profile = ({ email, onLogout }) => {
         return `${m}:${s.toString().padStart(2, '0')}`;
     };
 
-    // Загрузка данных
     useEffect(() => {
         let isMounted = true;
         const controller = new AbortController();
@@ -61,19 +59,19 @@ const Profile = ({ email, onLogout }) => {
         return () => { isMounted = false; controller.abort(); };
     }, [email, refreshTrigger, apiUrl]);
 
-    // Сердцебиение таймера
+    // tick every second so countdown displays stay in sync
     useEffect(() => {
         const interval = setInterval(() => setNow(Date.now()), 1000);
         return () => clearInterval(interval);
     }, []);
 
-    // Автоматическое гашение ваучера по истечении времени
+    // auto-redeem when 3 min timer runs out — barista already scanned it by then
     useEffect(() => {
         const checkExpiry = async () => {
             for (const [id, expiry] of Object.entries(activeTimers)) {
                 if (now >= expiry) {
                     try {
-                        await axios.post(`${apiUrl}/api/users/redeem-voucher`, { voucherId: id });
+                        await axios.post(`${apiUrl}/api/users/redeem-voucher`, { voucherId: id, email });
                         setActiveTimers(prev => {
                             const updated = { ...prev };
                             delete updated[id];
@@ -88,7 +86,7 @@ const Profile = ({ email, onLogout }) => {
         checkExpiry();
     }, [now, activeTimers, apiUrl, triggerRefresh, redeemingVoucher]);
 
-    // Сохранение таймеров
+    // persist timers so a page refresh doesn't reset the countdown
     useEffect(() => {
         localStorage.setItem("miners_timers", JSON.stringify(activeTimers));
     }, [activeTimers]);
@@ -98,7 +96,15 @@ const Profile = ({ email, onLogout }) => {
         setActiveTimers(prev => ({ ...prev, [voucherId]: expiry }));
     };
 
-    // Группировка ваучеров для чистоты кода
+    const handleDirectRedeem = async (voucherId) => {
+        try {
+            await axios.post(`${apiUrl}/api/users/redeem-voucher`, { voucherId, email });
+            triggerRefresh();
+        } catch (e) {
+            console.error("Upgrade redeem failed", e);
+        }
+    };
+
     const activeRewards = useMemo(() => myVouchers.filter(v => v.status === 'active'), [myVouchers]);
     const usedRewards = useMemo(() => myVouchers.filter(v => v.status === 'used'), [myVouchers]);
 
@@ -108,7 +114,6 @@ const Profile = ({ email, onLogout }) => {
         <div className={styles.profilePage}>
             <div className={styles.splitLayout}>
 
-                {/* ЛЕВАЯ ЧАСТЬ: ФИКСИРОВАННАЯ КАРТА */}
                 <div className={styles.leftSide}>
                     <div className={styles.cardContainer}>
                         <div className={styles.card}>
@@ -120,7 +125,6 @@ const Profile = ({ email, onLogout }) => {
                                 <p className={styles.token}>{user.qr_code_token}</p>
                             </div>
                             <div className={styles.statsGrid}>
-                                {/* First row: points and tier */}
                                 <div className={styles.statBox}>
                                     <p className={styles.statLabel}>Points</p>
                                     <p className={`${styles.statValue} ${styles.points}`}>
@@ -135,7 +139,6 @@ const Profile = ({ email, onLogout }) => {
                                     </p>
                                 </div>
 
-                                {/* Second row: Benefits*/}
                                 <div className={`${styles.statBox} ${styles.fullWidth}`}>
                                     <p className={styles.statLabel}>Your Benefits</p>
                                     <p className={styles.benefitsValue}>
@@ -155,7 +158,6 @@ const Profile = ({ email, onLogout }) => {
                     </div>
                 </div>
 
-                {/* ПРАВАЯ ЧАСТЬ: КОНТЕНТ (ИНВЕНТАРЬ И МАГАЗИН) */}
                 <div className={styles.rightSide}>
                     <div className={styles.tabs}>
                         <button className={!showShop ? styles.activeTab : styles.tab} onClick={() => setShowShop(false)}>Inventory</button>
@@ -167,19 +169,19 @@ const Profile = ({ email, onLogout }) => {
                     ) : (
                         <div className={styles.inventoryContainer}>
 
-                            {/* АКТИВНЫЕ ВАУЧЕРЫ */}
                             <section className={styles.section}>
                                 <h3 className={styles.sectionTitle}><Ticket size={18} /> My active rewards</h3>
                                 {activeRewards.length > 0 ? (
                                     <div className={styles.voucherGrid}>
                                         {activeRewards.map(v => {
+                                            const isUpgrade = v.title.includes('STATUS');
                                             const expiryTime = activeTimers[v.id];
                                             const isRunning = expiryTime && expiryTime > now;
                                             return (
                                                 <div key={v.id} className={styles.vCard}>
                                                     <div className={styles.vImageWrapper}>
                                                         <img src={v.image_url || "/espresso.jpg"} alt="v" />
-                                                        {isRunning && (
+                                                        {isRunning && !isUpgrade && (
                                                             <div className={styles.timerOverlay}>
                                                                 <div className={styles.timerBox}>
                                                                     <span>ACTIVE</span>
@@ -194,12 +196,21 @@ const Profile = ({ email, onLogout }) => {
                                                             <span className={styles.vExpiry}>Exp: {new Date(v.expires_at).toLocaleDateString()}</span>
                                                         </div>
                                                         <p className={styles.vDescription}>{v.description}</p>
-                                                        <button
-                                                            className={isRunning ? styles.btnShow : styles.btnActivate}
-                                                            onClick={() => isRunning ? setRedeemingVoucher(v) : handleActivate(v.id)}
-                                                        >
-                                                            {isRunning ? "SHOW QR" : "ACTIVATE (3 MIN)"}
-                                                        </button>
+                                                        {isUpgrade ? (
+                                                            <button
+                                                                className={styles.btnActivate}
+                                                                onClick={() => handleDirectRedeem(v.id)}
+                                                            >
+                                                                APPLY UPGRADE
+                                                            </button>
+                                                        ) : (
+                                                            <button
+                                                                className={isRunning ? styles.btnShow : styles.btnActivate}
+                                                                onClick={() => isRunning ? setRedeemingVoucher(v) : handleActivate(v.id)}
+                                                            >
+                                                                {isRunning ? "SHOW QR" : "ACTIVATE (3 MIN)"}
+                                                            </button>
+                                                        )}
                                                     </div>
                                                 </div>
                                             );
@@ -208,7 +219,6 @@ const Profile = ({ email, onLogout }) => {
                                 ) : <p className={styles.emptyText}>No active vouchers yet.</p>}
                             </section>
 
-                            {/* ИСТОРИЯ ИСПОЛЬЗОВАННЫХ */}
                             <section className={styles.section} style={{ marginTop: '40px' }}>
                                 <h3 className={styles.sectionTitle}><History size={18} /> Used Vouchers</h3>
                                 <div className={styles.historyList}>
@@ -227,12 +237,11 @@ const Profile = ({ email, onLogout }) => {
                 </div>
             </div>
 
-            {/* MODAL */}
             {redeemingVoucher && (
                 <VoucherRedeem
                     voucher={redeemingVoucher}
                     expiryTime={activeTimers[redeemingVoucher.id]}
-                    currentTime={now}
+
                     onCancel={() => setRedeemingVoucher(null)}
                 />
             )}

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import axios from "axios";
+import adminApi from "../../utils/adminApi";
 import { Plus, Trash2, Pencil, Save, X, MapPin } from "lucide-react";
 import styles from "../styles/AdminBranches.module.css";
 import Popup from "../Popup";
@@ -21,7 +21,7 @@ const AdminBranches = () => {
 
     useEffect(() => {
         const controller = new AbortController();
-        axios.get(`${apiUrl}/api/admin/branches-full`, { signal: controller.signal })
+        adminApi.get(`${apiUrl}/api/admin/branches-full`, { signal: controller.signal })
             .then(res => setBranches(res.data))
             .catch(err => { if (err.name !== 'CanceledError') console.error(err); });
         return () => controller.abort();
@@ -34,7 +34,7 @@ const AdminBranches = () => {
     const handleSubmit = async (e) => {
         e.preventDefault();
         try {
-            await axios.post(`${apiUrl}/api/admin/branches/save`, {
+            await adminApi.post(`${apiUrl}/api/admin/branches/save`, {
                 ...formData,
                 id: editingId
             });
@@ -56,7 +56,7 @@ const AdminBranches = () => {
 
     const executeDelete = async (id) => {
         try {
-            await axios.delete(`${apiUrl}/api/admin/branches/${id}`);
+            await adminApi.delete(`${apiUrl}/api/admin/branches/${id}`);
             setRefreshTrigger(prev => prev + 1);
             showMessage('success', 'Deleted', 'The branch has been removed from the system.');
         } catch (err) {
@@ -76,7 +76,6 @@ const AdminBranches = () => {
 
     return (
         <div className={styles.container}>
-            {/* BRANCH FORM */}
             <div className={styles.addCard}>
                 <h2>{editingId ? "Edit Location" : "Add New Location"}</h2>
                 <form onSubmit={handleSubmit} className={styles.formContent}>
@@ -125,7 +124,6 @@ const AdminBranches = () => {
                 </form>
             </div>
 
-            {/* BRANCH LIST */}
             <div className={styles.branchlist}>
                 {branches.map(b => (
                     <div key={b.id} className={styles.branchCard}>

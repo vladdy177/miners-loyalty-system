@@ -44,15 +44,16 @@ const buildLoyaltyObject = (user, activeVouchers = []) => {
         state: 'ACTIVE',
         accountHolderName: fullName,
         accountId: user.qr_code_token,
+        loyaltyPoints: {
+            label: 'Points',
+            balance: { string: String(user.points_balance) }
+        },
         secondaryLoyaltyPoints: {
-            label: "Points",
-            balance: {
-                string: String(user.points_balance)
-            }
+            label: 'Member',
+            balance: { string: fullName }
         },
         barcode: { type: 'QR_CODE', value: user.qr_code_token, alternateText: user.qr_code_token },
         heroImage: { sourceUri: { uri: `${baseUrl}/banners/${tier.banner}` } },
-        loyaltyPoints: { label: 'Member name', balance: { fullName } },
         linksModuleData: {
             uris: [{
                 uri: `${baseUrl}/?email=${user.email}`,
@@ -69,7 +70,7 @@ const buildLoyaltyObject = (user, activeVouchers = []) => {
     };
 };
 
-// Used for the "Save to Google Wallet" button
+// builds a signed JWT for the "Add to Google Wallet" button — doesn't call the API
 const generateGoogleWalletLink = (user, activeVouchers = []) => {
     const creds = getCredentials();
     if (!creds) return null;
@@ -83,12 +84,12 @@ const generateGoogleWalletLink = (user, activeVouchers = []) => {
         payload: { loyaltyObjects: [loyaltyObject] }
     };
 
-    // Use the private key from the loaded credentials
+    // env vars escape newlines, need to convert them back or RS256 signing breaks
     const pk = creds.privateKey.replace(/\\n/g, '\n');
     return jwt.sign(claims, pk, { algorithm: 'RS256' });
 };
 
-// Used for background syncing (Admin updates / Purchases)
+// patches existing wallet object — called after any data change, runs in background
 const syncWallet = async (user, activeVouchers = []) => {
     const creds = getCredentials();
     if (!creds) return;
@@ -102,6 +103,11 @@ const syncWallet = async (user, activeVouchers = []) => {
             resourceId: resourceId,
             requestBody: loyaltyObject
         });
+
+        await db.query(
+            'UPDATE loyalty_cards SET last_sync_at = NOW() WHERE qr_code_token = $1',
+            [user.qr_code_token]
+        );
 
         console.log(`[SYNC] ✅ Google Wallet success: ${user.email}`);
     } catch (err) {

@@ -1,3 +1,4 @@
+/* wrapper for the whole reward catalog */
 .marketContainer {
     padding: 10px;
     font-family: 'TheMinersFont', sans-serif;
@@ -25,6 +26,7 @@
     text-align: center;
 }
 
+/* vertical list of reward cards */
 .itemsList {
     display: flex;
     flex-direction: column;
@@ -34,9 +36,9 @@
     animation-delay: 0.4s;
 }
 
+/* base card — light blue background for regular vouchers */
 .rewardCard {
     background-color: var(--miners-blue-light);
-    /* Standard Yellow */
     border-radius: 4px;
     overflow: hidden;
     color: black;
@@ -44,28 +46,28 @@
     width: 400px;
 }
 
-/* Make Tier Upgrades look different (Orange like in your photo) */
+/* alternating pink tint so adjacent cards don't look identical */
 .rewardCard:nth-child(even) {
     background-color: var(--miners-pink-light);
 }
 
-/* Container for the image */
+/* image area at the top of each card */
 .imageWrapper {
     width: 100%;
-    height: 150px; /* Fixed height for consistency */
+    height: 150px;
     overflow: hidden;
-    background-color: #222; /* Placeholder color while loading */
+    background-color: #222;
 }
 
-/* The actual image */
 .imageWrapper img {
     width: 100%;
     height: 100%;
-    object-fit: cover; /* This makes the image fill the area without stretching */
+    object-fit: cover;
     display: block;
     transition: transform 0.3s ease;
 }
 
+/* points progress bar area */
 .progressHeader {
     padding: 10px 15px 5px 15px;
     background-color: rgba(0, 0, 0, 0.1);
@@ -85,6 +87,7 @@
     border-radius: 2px;
 }
 
+/* animated fill, transitions smoothly when points change */
 .progressFill {
     height: 100%;
     background-color: var(--color-black);
@@ -121,16 +124,16 @@
     padding: 5px 10px;
     cursor: pointer;
     text-transform: uppercase;
-    border-radius: 2px;
 }
 
-/*LOCKED CARD*/
+/* greyed-out card for rewards the user can't access yet (wrong tier) */
 .lockedCard {
     filter: grayscale(0.9);
     opacity: 0.8;
     position: relative;
 }
 
+/* dark overlay with lock icon that sits over the image */
 .tierLockOverlay {
     position: absolute;
     top: 0;
@@ -161,10 +164,12 @@
     padding: 0 10px;
 }
 
+/* makes the progress bar section look faded on locked cards */
 .dimmed {
     opacity: 0.3;
 }
 
+/* disabled-looking button for locked items */
 .lockedBtn {
     align-self: flex-end;
     background-color: rgba(0, 0, 0, 0.2);
@@ -176,6 +181,7 @@
     cursor: not-allowed;
 }
 
+/* loading/empty state */
 .statusText {
     text-align: center;
     color: #888;

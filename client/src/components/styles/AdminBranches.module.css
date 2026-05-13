@@ -14,11 +14,7 @@
     animation: fadeInSlide 1s ease-out forwards;
 }
 
-.addCard h1 {
-    margin-bottom: 20px;
-}
-
-.addCard h3 {
+.addCard h2 {
     margin-top: 0;
     font-size: 14px;
     text-transform: uppercase;
@@ -40,22 +36,15 @@
 }
 
 .inputMain {
-    flex: 3;
+    flex: 1;
+    min-width: 160px;
     padding: 12px;
     border: 1px solid var(--miners-gray);
     border-radius: 8px;
     font-size: 15px;
-    display: flex;
-    flex-direction: column;
-}
-
-.inputNumber,
-.inputSelect {
-    flex: 1;
-    padding: 12px;
-    border: 1px solid var(--miners-gray);
-    border-radius: 8px;
-    background-color: var(--color-white);
+    font-family: inherit;
+    box-sizing: border-box;
+    background: var(--color-white);
 }
 
 .textarea {
@@ -65,7 +54,9 @@
     border: 1px solid var(--miners-gray);
     border-radius: 8px;
     font-family: inherit;
+    font-size: 14px;
     resize: none;
+    box-sizing: border-box;
 }
 
 .formActions {
@@ -99,24 +90,26 @@
     align-items: center;
 }
 
-/* List Styles */
+/* Branch list */
+
 .branchlist {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(450px, 1fr));
+    grid-template-columns: repeat(auto-fit, minmax(min(450px, 100%), 1fr));
     gap: 20px;
 }
+
 .branchCard {
     background: white;
     padding: 20px;
     border-radius: 12px;
-    margin-bottom: 10px;
     border-left: 4px solid var(--miners-orange);
     display: flex;
     justify-content: space-between;
+    align-items: center;
     transition: transform 0.2s ease;
     animation: fadeInSlide 0.8s ease-out both;
     animation-delay: 0.4s;
-    align-items: center;
+    min-width: 0;
 }
 
 .branchCard:hover {
@@ -146,6 +139,7 @@
     font-weight: 700;
     text-transform: uppercase;
     margin: 4px 0;
+    word-break: break-word;
 }
 
 .addressText {
@@ -154,6 +148,7 @@
     display: flex;
     align-items: center;
     gap: 5px;
+    word-break: break-word;
 }
 
 .actions {
@@ -161,6 +156,7 @@
     flex-direction: column;
     gap: 10px;
     margin-left: 20px;
+    flex-shrink: 0;
 }
 
 .deleteBtn,
@@ -198,37 +194,61 @@
         opacity: 0;
         transform: translateY(15px);
     }
-
     to {
         opacity: 1;
         transform: translateY(0);
     }
 }
 
-/* --- Mobile & Tablet --- */
-@media (max-width: 700px) {
-    .branchList {
+/* Tablet */
+@media (max-width: 1100px) {
+    .branchlist {
         grid-template-columns: 1fr;
-        /* На мобилках строго в один ряд */
+    }
+}
+
+/* Mobile */
+@media (max-width: 700px) {
+    .addCard {
+        padding: 16px;
+    }
+
+    .branchlist {
+        grid-template-columns: 1fr;
     }
 
     .inputGroup {
         flex-direction: column;
     }
 
+    .inputMain {
+        min-width: unset;
+        width: 100%;
+    }
+
+    .formActions {
+        flex-direction: column-reverse;
+    }
+
+    .submitBtn,
+    .cancelBtn {
+        width: 100%;
+        justify-content: center;
+    }
+
     .branchCard {
         flex-direction: column;
         align-items: flex-start;
-        padding: 20px;
+        padding: 16px;
     }
 
     .actions {
         flex-direction: row;
         margin-left: 0;
-        margin-top: 15px;
+        margin-top: 12px;
         width: 100%;
         justify-content: flex-end;
         border-top: 1px solid #f1f5f9;
-        padding-top: 15px;
+        padding-top: 12px;
     }
 }
