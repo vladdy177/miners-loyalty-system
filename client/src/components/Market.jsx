@@ -44,9 +44,11 @@ const Market = ({ userEmail, userPoints, onPurchaseSuccess, userTier }) => {
     };
 
     const filteredRewards = rewards.filter(item => {
+        if (userTier !== 'CREW' && item.is_crew_only) return false;
         if (item.discount_type !== 'percentage' && !item.title.includes('STATUS')) {
             return true;
         }
+
 
         const itemTier = item.title.replace(' STATUS', '');
         if (userTier === itemTier) return false;

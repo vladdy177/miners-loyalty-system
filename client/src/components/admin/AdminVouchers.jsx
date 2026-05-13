@@ -11,6 +11,7 @@ const AdminVouchers = () => {
     const [targetSegment, setTargetSegment] = useState({ gender: 'all', branchId: 'all', tier: 'all' });
     const [selectedTpl, setSelectedTpl] = useState("");
     const [popup, setPopup] = useState({ isOpen: false, type: 'info', title: '', message: '', onConfirm: null });
+    const [branches, setBranches] = useState([]);
 
     const [formData, setFormData] = useState({
         title: "",
@@ -30,6 +31,9 @@ const AdminVouchers = () => {
         axios.get(`${apiUrl}/api/admin/vouchers`, { signal: controller.signal })
             .then(res => setVouchers(res.data))
             .catch(err => { if (err.name !== 'CanceledError') console.error(err); });
+        axios.get(`${apiUrl}/api/branches`)
+            .then(res => setBranches(res.data))
+            .catch(err => console.error("Error fetching branches", err));
         return () => controller.abort();
     }, [apiUrl, refreshTrigger]);
 
@@ -198,7 +202,7 @@ const AdminVouchers = () => {
                         <div className={styles.inputWithLabel}>
                             <label className={styles.fieldLabel}>Image URL</label>
                             <input
-                                placeholder="https://unsplash.com/..."
+                                placeholder="https://web.com/..."
                                 value={formData.image_url}
                                 onChange={e => setFormData({ ...formData, image_url: e.target.value })}
                                 className={styles.inputMain}
@@ -252,6 +256,16 @@ const AdminVouchers = () => {
                             <option value="SILVER">SILVER</option>
                             <option value="GOLD">GOLD</option>
                             <option value="CREW">CREW</option>
+                        </select>
+                        <select
+                            value={targetSegment.branchId}
+                            onChange={e => setTargetSegment({ ...targetSegment, branchId: e.target.value })}
+                            className={styles.inputSelect}
+                        >
+                            <option value="all">ALL BRANCHES</option>
+                            {branches.map(b => (
+                                <option key={b.id} value={b.id}>{b.name}</option>
+                            ))}
                         </select>
                         <button onClick={handleBlast} className={styles.blastBtn}>
                             SEND TO SEGMENT

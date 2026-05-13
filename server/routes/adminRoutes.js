@@ -157,7 +157,7 @@ router.delete('/vouchers/:id', async (req, res) => {
 // Find a user a asign the voucher
 router.post('/vouchers/assign-bulk', async (req, res) => {
     const { templateId, segment } = req.body;
-    // segment = { gender: 'female', branchId: 'all', tier: 'all' }
+    const { gender, tier, branchId } = segment;
 
     try {
         await db.query('BEGIN');

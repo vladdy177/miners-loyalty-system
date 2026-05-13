@@ -12,8 +12,6 @@ const getCredentials = () => {
             keys = require('./google-key.json');
         }
 
-        // This is the "Magic Fix" for the 401 error on Render:
-        // We use the official helper to build the auth object
         const auth = google.auth.fromJSON(keys);
         auth.scopes = ['https://www.googleapis.com/auth/wallet_object.issuer'];
 
@@ -49,12 +47,12 @@ const buildLoyaltyObject = (user, activeVouchers = []) => {
         secondaryLoyaltyPoints: {
             label: "Points",
             balance: {
-                string: fullName
+                string: String(user.points_balance)
             }
         },
         barcode: { type: 'QR_CODE', value: user.qr_code_token, alternateText: user.qr_code_token },
         heroImage: { sourceUri: { uri: `${baseUrl}/banners/${tier.banner}` } },
-        loyaltyPoints: { label: 'Member name', balance: { string: String(user.points_balance) } },
+        loyaltyPoints: { label: 'Member name', balance: { fullName } },
         linksModuleData: {
             uris: [{
                 uri: `${baseUrl}/?email=${user.email}`,

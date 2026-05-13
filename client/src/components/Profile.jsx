@@ -117,6 +117,7 @@ const Profile = ({ email, onLogout }) => {
                             <p className={styles.branchName}>{user.home_branch}</p>
                             <div className={styles.qrContainer}>
                                 <QRCodeSVG value={user.qr_code_token} size={150} />
+                                <p className={styles.token}>{user.qr_code_token}</p>
                             </div>
                             <div className={styles.statsGrid}>
                                 {/* First row: points and tier */}
