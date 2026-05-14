@@ -3,6 +3,30 @@ const router = express.Router();
 const db = require('../config/db');
 const { triggerFullSync } = require('../walletService');
 
+/**
+ * @swagger
+ * tags:
+ *   name: Loyalty Shop
+ *   description: Rewards catalog and point-spending purchases
+ */
+
+/**
+ * @swagger
+ * /api/loyalty/rewards:
+ *   get:
+ *     summary: Get all available reward templates
+ *     tags: [Loyalty Shop]
+ *     description: Returns the full catalog of purchasable rewards, sorted by cost ascending. Includes tier upgrade items (e.g. "SILVER STATUS").
+ *     responses:
+ *       200:
+ *         description: List of reward templates
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items:
+ *                 $ref: '#/components/schemas/VoucherTemplate'
+ */
 router.get('/rewards', async (req, res) => {
     try {
         const result = await db.query('SELECT * FROM voucher_templates ORDER BY cost ASC');
@@ -12,6 +36,59 @@ router.get('/rewards', async (req, res) => {
     }
 });
 
+/**
+ * @swagger
+ * /api/loyalty/purchase:
+ *   post:
+ *     summary: Purchase a reward using loyalty points
+ *     tags: [Loyalty Shop]
+ *     description: >
+ *       Deducts points from the customer's balance and either:
+ *       - Creates a new user_voucher (for standard rewards), or
+ *       - Upgrades the customer's tier (for STATUS rewards like "SILVER STATUS").
+ *
+ *       The purchase runs in a database transaction.
+ *       A SELECT FOR UPDATE prevents race conditions from concurrent requests.
+ *       All validations happen before any writes.
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required: [email, rewardId]
+ *             properties:
+ *               email:
+ *                 type: string
+ *                 format: email
+ *                 example: jan.novak@email.cz
+ *               rewardId:
+ *                 type: string
+ *                 format: uuid
+ *                 description: ID of the voucher template to purchase
+ *     responses:
+ *       200:
+ *         description: Purchase successful
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success: { type: boolean, example: true }
+ *                 message: { type: string, example: "Purchased FREE COFFEE!" }
+ *       400:
+ *         description: Insufficient points, wrong tier sequence, or missing fields
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ *       404:
+ *         description: User or reward not found
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ */
 router.post('/purchase', async (req, res) => {
     const { email, rewardId } = req.body;
     if (!email || !rewardId) {
@@ -44,7 +121,6 @@ router.post('/purchase', async (req, res) => {
         const reward = rewardRes.rows[0];
 
         // all checks before any writes — rollback doesn't undo a half-written state cleanly
-
         if (user.points_balance < reward.cost) {
             await db.query('ROLLBACK');
             return res.status(400).json({ error: 'Insufficient points' });
@@ -66,7 +142,6 @@ router.post('/purchase', async (req, res) => {
                 return res.status(400).json({ error: 'You have already reached the maximum tier' });
             }
         }
-
 
         if (reward.title.includes('STATUS')) {
             const tierName = reward.title.split(' ')[0];

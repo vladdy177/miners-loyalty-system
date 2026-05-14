@@ -6,12 +6,55 @@ const jwt = require('jsonwebtoken');
 const { syncWallet, triggerFullSync } = require('../walletService');
 const { verifyAdmin, JWT_SECRET } = require('../middleware/auth');
 
+/**
+ * @swagger
+ * tags:
+ *   name: Admin
+ *   description: Admin-only endpoints. All routes except /login require a Bearer JWT token.
+ */
+
 // skip auth only for the login route itself, everything else requires a valid token
 router.use((req, res, next) => {
     if (req.path === '/login' && req.method === 'POST') return next();
     verifyAdmin(req, res, next);
 });
 
+/**
+ * @swagger
+ * /api/admin/login:
+ *   post:
+ *     summary: Admin login
+ *     tags: [Admin]
+ *     description: Returns a JWT token valid for 8 hours. Use it as a Bearer token in all other admin requests.
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required: [username, password]
+ *             properties:
+ *               username:
+ *                 type: string
+ *                 example: admin
+ *               password:
+ *                 type: string
+ *                 example: password123
+ *     responses:
+ *       200:
+ *         description: Login successful
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success: { type: boolean, example: true }
+ *                 token:   { type: string, example: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..." }
+ *       400:
+ *         description: Missing username or password
+ *       401:
+ *         description: Wrong credentials
+ */
 router.post('/login', async (req, res) => {
     const { username, password } = req.body;
     if (!username || !password) {
@@ -35,6 +78,34 @@ router.post('/login', async (req, res) => {
     }
 });
 
+/**
+ * @swagger
+ * /api/admin/users:
+ *   get:
+ *     summary: Get all registered customers
+ *     tags: [Admin]
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Array of customers with loyalty card data
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items:
+ *                 type: object
+ *                 properties:
+ *                   id:             { type: string, format: uuid }
+ *                   first_name:     { type: string }
+ *                   last_name:      { type: string }
+ *                   email:          { type: string }
+ *                   points_balance: { type: integer }
+ *                   tier:           { type: string }
+ *                   home_branch:    { type: string }
+ *       401:
+ *         description: Missing or invalid token
+ */
 router.get('/users', async (req, res) => {
     try {
         const result = await db.query(`
@@ -52,6 +123,33 @@ router.get('/users', async (req, res) => {
     }
 });
 
+/**
+ * @swagger
+ * /api/admin/update-user:
+ *   post:
+ *     summary: Manually update a customer's points and tier
+ *     tags: [Admin]
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required: [userId, points, tier]
+ *             properties:
+ *               userId: { type: string, format: uuid }
+ *               points: { type: integer, example: 5000 }
+ *               tier:   { type: string, enum: [STANDARD, SILVER, GOLD, CREW] }
+ *     responses:
+ *       200:
+ *         description: Update successful, Google Wallet sync triggered in background
+ *       400:
+ *         description: Missing required fields
+ *       401:
+ *         description: Missing or invalid token
+ */
 router.post('/update-user', async (req, res) => {
     const { userId, points, tier } = req.body;
     if (!userId || points === undefined || !tier) {
@@ -80,6 +178,26 @@ router.post('/update-user', async (req, res) => {
     }
 });
 
+/**
+ * @swagger
+ * /api/admin/vouchers:
+ *   get:
+ *     summary: Get all voucher templates
+ *     tags: [Admin]
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: List of all templates sorted by cost
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items:
+ *                 $ref: '#/components/schemas/VoucherTemplate'
+ *       401:
+ *         description: Missing or invalid token
+ */
 router.get('/vouchers', async (req, res) => {
     try {
         const result = await db.query('SELECT * FROM voucher_templates ORDER BY cost ASC');
@@ -89,6 +207,40 @@ router.get('/vouchers', async (req, res) => {
     }
 });
 
+/**
+ * @swagger
+ * /api/admin/vouchers:
+ *   post:
+ *     summary: Create a new voucher template
+ *     tags: [Admin]
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required: [title, description, cost]
+ *             properties:
+ *               title:               { type: string, example: "FREE COFFEE" }
+ *               description:         { type: string, example: "One free espresso" }
+ *               cost:                { type: integer, example: 850 }
+ *               discount_type:       { type: string, enum: [free_product, percentage], default: free_product }
+ *               discount_value:      { type: number, example: 0 }
+ *               image_url:           { type: string }
+ *               is_crew_only:        { type: boolean, default: false }
+ *               valid_duration_days: { type: integer, example: 30 }
+ *     responses:
+ *       201:
+ *         description: Template created
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/VoucherTemplate'
+ *       401:
+ *         description: Missing or invalid token
+ */
 router.post('/vouchers', async (req, res) => {
     const { title, description, cost, discount_type, discount_value, image_url, is_crew_only, valid_duration_days } = req.body;
     if (!title || !description || cost === undefined) {
@@ -106,6 +258,65 @@ router.post('/vouchers', async (req, res) => {
     }
 });
 
+/**
+ * @swagger
+ * /api/admin/vouchers/{id}:
+ *   put:
+ *     summary: Update an existing voucher template
+ *     tags: [Admin]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema: { type: string, format: uuid }
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             $ref: '#/components/schemas/VoucherTemplate'
+ *     responses:
+ *       200:
+ *         description: Updated template
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/VoucherTemplate'
+ *       404:
+ *         description: Template not found
+ *       401:
+ *         description: Missing or invalid token
+ *   delete:
+ *     summary: Delete a voucher template
+ *     tags: [Admin]
+ *     security:
+ *       - bearerAuth: []
+ *     description: >
+ *       Deletes the template and all associated user_vouchers.
+ *       Users who purchased (not gifted) active vouchers automatically receive a full points refund.
+ *       Their Google Wallet cards are synced in the background.
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema: { type: string, format: uuid }
+ *     responses:
+ *       200:
+ *         description: Deleted successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:  { type: boolean }
+ *                 refunded: { type: integer, description: "Number of users who received a points refund" }
+ *       404:
+ *         description: Template not found
+ *       401:
+ *         description: Missing or invalid token
+ */
 router.put('/vouchers/:id', async (req, res) => {
     const { id } = req.params;
     const { title, description, cost, discount_type, discount_value, image_url, is_crew_only, valid_duration_days } = req.body;
@@ -176,6 +387,52 @@ router.delete('/vouchers/:id', async (req, res) => {
     }
 });
 
+/**
+ * @swagger
+ * /api/admin/vouchers/assign-bulk:
+ *   post:
+ *     summary: Assign a voucher to a filtered customer segment
+ *     tags: [Admin]
+ *     security:
+ *       - bearerAuth: []
+ *     description: >
+ *       Distributes a voucher template to all users matching the given segment filters.
+ *       Any combination of filters can be used — omit a field or set it to "all" to skip that filter.
+ *       Filters are applied with AND logic. The voucher source is set to "gifted" (no points deducted).
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required: [templateId, segment]
+ *             properties:
+ *               templateId:
+ *                 type: string
+ *                 format: uuid
+ *               segment:
+ *                 type: object
+ *                 properties:
+ *                   gender:   { type: string, enum: [all, male, female, other], default: all }
+ *                   tier:     { type: string, enum: [all, STANDARD, SILVER, GOLD, CREW], default: all }
+ *                   country:  { type: string, example: "Czech Republic" }
+ *                   city:     { type: string, example: "Prague" }
+ *                   branchId: { type: string, format: uuid }
+ *     responses:
+ *       200:
+ *         description: Campaign sent
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success: { type: boolean }
+ *                 count:   { type: integer, description: "Number of users who received the voucher" }
+ *       404:
+ *         description: Template not found
+ *       401:
+ *         description: Missing or invalid token
+ */
 router.post('/vouchers/assign-bulk', async (req, res) => {
     const { templateId, segment } = req.body;
 
@@ -243,6 +500,34 @@ router.post('/vouchers/assign-bulk', async (req, res) => {
     }
 });
 
+/**
+ * @swagger
+ * /api/admin/branches-full:
+ *   get:
+ *     summary: Get all branches with full region details
+ *     tags: [Admin]
+ *     security:
+ *       - bearerAuth: []
+ *     description: Unlike the public /api/branches, this returns all branches (including inactive) with city and country info for the admin panel.
+ *     responses:
+ *       200:
+ *         description: List of branches
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items:
+ *                 type: object
+ *                 properties:
+ *                   id:        { type: string, format: uuid }
+ *                   name:      { type: string }
+ *                   address:   { type: string }
+ *                   city:      { type: string }
+ *                   country:   { type: string }
+ *                   region_id: { type: string, format: uuid }
+ *       401:
+ *         description: Missing or invalid token
+ */
 router.get('/branches-full', async (req, res) => {
     try {
         const result = await db.query(`
@@ -257,6 +542,36 @@ router.get('/branches-full', async (req, res) => {
     }
 });
 
+/**
+ * @swagger
+ * /api/admin/branches/save:
+ *   post:
+ *     summary: Create or update a branch location
+ *     tags: [Admin]
+ *     security:
+ *       - bearerAuth: []
+ *     description: If `id` is provided, updates the existing branch. Otherwise creates a new one. The region (city + country) is automatically created if it doesn't exist yet.
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required: [name, address, city, country]
+ *             properties:
+ *               id:      { type: string, format: uuid, description: "Omit to create, include to update" }
+ *               name:    { type: string, example: "The Miners Letná" }
+ *               address: { type: string, example: "Milady Horákové 808/38, Praha 7" }
+ *               city:    { type: string, example: "Prague" }
+ *               country: { type: string, example: "Czech Republic" }
+ *     responses:
+ *       200:
+ *         description: Saved successfully
+ *       400:
+ *         description: Missing required fields
+ *       401:
+ *         description: Missing or invalid token
+ */
 router.post('/branches/save', async (req, res) => {
     const { id, name, address, city, country } = req.body;
     if (!name || !address || !city || !country) {
@@ -302,6 +617,32 @@ router.post('/branches/save', async (req, res) => {
     }
 });
 
+/**
+ * @swagger
+ * /api/admin/branches/{id}:
+ *   delete:
+ *     summary: Delete a branch location
+ *     tags: [Admin]
+ *     security:
+ *       - bearerAuth: []
+ *     description: Fails with 400 if any customers still have this branch set as their home location.
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema: { type: string, format: uuid }
+ *     responses:
+ *       200:
+ *         description: Deleted successfully
+ *       400:
+ *         description: Branch still has assigned users
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ *       401:
+ *         description: Missing or invalid token
+ */
 router.delete('/branches/:id', async (req, res) => {
     try {
         const userCheck = await db.query(
@@ -319,6 +660,39 @@ router.delete('/branches/:id', async (req, res) => {
     }
 });
 
+/**
+ * @swagger
+ * /api/admin/stats-summary:
+ *   get:
+ *     summary: Get aggregated analytics data for the dashboard
+ *     tags: [Admin]
+ *     security:
+ *       - bearerAuth: []
+ *     description: Returns all chart data in a single request — gender split, tier distribution, branch/city/country breakdown, registration growth, point economy, age groups, voucher stats and KPI numbers.
+ *     responses:
+ *       200:
+ *         description: Analytics summary
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 totalUsers:  { type: integer }
+ *                 avgAge:      { type: number }
+ *                 avgPoints:   { type: integer }
+ *                 topBranch:   { type: string }
+ *                 gender:      { type: array, items: { type: object } }
+ *                 tiers:       { type: array, items: { type: object } }
+ *                 branches:    { type: array, items: { type: object } }
+ *                 countries:   { type: array, items: { type: object } }
+ *                 cities:      { type: array, items: { type: object } }
+ *                 growth:      { type: array, items: { type: object } }
+ *                 economy:     { type: object, properties: { earned: { type: number }, burned: { type: number } } }
+ *                 vouchers:    { type: object, properties: { total: { type: integer }, used: { type: integer }, active: { type: integer } } }
+ *                 ageGroups:   { type: array, items: { type: object } }
+ *       401:
+ *         description: Missing or invalid token
+ */
 router.get('/stats-summary', async (req, res) => {
     try {
         const [genderRes, tierRes, branchRes, growthRes, ecoRes, voucherStats, avgPoints, avgAgeRes, topBranch, totalUsersRes, countryRes, cityRes, ageRes] = await Promise.all([

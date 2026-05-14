@@ -6,76 +6,90 @@
 /* responsive grid — narrows to 1 column on mobile */
 .grid {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-    gap: 20px;
+    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+    gap: 16px;
     margin-bottom: 30px;
 }
 
-/* each KPI card gets its background color set inline from the component */
+/* white card with subtle border — color lives only in the icon circle */
 .card {
-    padding: 25px;
-    border-radius: 16px;
+    background: white;
+    padding: 20px 24px;
+    border-radius: 12px;
     display: flex;
     align-items: center;
-    gap: 20px;
-    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
-    transition: transform 0.2s ease;
+    gap: 16px;
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.06);
+    border: 1px solid #f1f5f9;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
     animation: fadeInSlide 0.8s ease-out both;
     animation-delay: 0.4s;
 }
 
 .card:hover {
-    transform: translateY(-5px);
+    transform: translateY(-3px);
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.1);
 }
 
-/* icon sits in a semi-transparent circle */
+/* small colored circle — the only colored element on the card */
 .iconWrapper {
-    background: rgba(255, 255, 255, 0.2);
-    padding: 15px;
-    border-radius: 12px;
+    width: 44px;
+    height: 44px;
+    border-radius: 10px;
     display: flex;
     align-items: center;
     justify-content: center;
+    flex-shrink: 0;
 }
 
 .cardInfo {
-    color: inherit;
+    color: #1a1a1a;
+    min-width: 0;
 }
 
-/* label inherits whatever text color the card has */
 .cardTitle {
     font-size: 11px;
     font-weight: 400;
     text-transform: uppercase;
     letter-spacing: 1px;
-    margin: 0;
-    opacity: 0.6;
+    margin: 0 0 4px 0;
+    color: #94a3b8;
 }
 
 .cardValue {
-    font-size: 18px;
-    font-weight: 400;
-    margin: 5px 0 0 0;
+    font-size: 20px;
+    font-weight: 600;
+    margin: 0;
+    color: #0f172a;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 
 /* status box at the bottom of the dashboard */
 .welcomeBox {
     background: white;
-    padding: 30px;
-    border-radius: 16px;
-    border-left: 6px solid var(--miners-orange);
-    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+    padding: 24px 30px;
+    border-radius: 12px;
+    border-left: 4px solid var(--miners-orange);
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.06);
+    border-top: 1px solid #f1f5f9;
+    border-right: 1px solid #f1f5f9;
+    border-bottom: 1px solid #f1f5f9;
     animation: fadeInSlide 1s ease-out forwards;
 }
 
 .welcomeBox h3 {
     margin: 0;
-    font-weight: 400;
+    font-weight: 600;
+    color: #0f172a;
+    font-size: 15px;
 }
 
 .welcomeBox p {
-    margin: 5px 0 0 0;
-    color: #666;
+    margin: 6px 0 0 0;
+    color: #64748b;
+    font-size: 14px;
 }
 
 @media (max-width: 700px) {

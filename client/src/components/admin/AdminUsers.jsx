@@ -112,6 +112,7 @@ const AdminUsers = () => {
                                 type="number"
                                 value={editData.points}
                                 onChange={(e) => setEditData({ ...editData, points: parseInt(e.target.value) || 0 })}
+                                onFocus={(e) => e.target.select()}
                                 className={styles.inputPoints}
                             />
                             <select

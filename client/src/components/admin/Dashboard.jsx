@@ -62,8 +62,10 @@ const Dashboard = () => {
         <div className={styles.container}>
             <div className={styles.grid}>
                 {kpis.map((kpi, index) => (
-                    <div key={index} className={styles.card} style={{ backgroundColor: kpi.bg }}>
-                        <div className={styles.iconWrapper}>{kpi.icon}</div>
+                    <div key={index} className={styles.card}>
+                        <div className={styles.iconWrapper} style={{ backgroundColor: kpi.bg }}>
+                            {kpi.icon}
+                        </div>
                         <div className={styles.cardInfo}>
                             <p className={styles.cardTitle}>{kpi.title}</p>
                             <h2 className={styles.cardValue}>{kpi.value}</h2>

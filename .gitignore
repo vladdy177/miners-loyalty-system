@@ -1,4 +1,7 @@
-# Dependencies 
+# Local notes — not for the repo
+temp/
+
+# Dependencies
 node_modules/
 dist/
 .DS_Store
