@@ -109,9 +109,14 @@ const AdminUsers = () => {
                     {editingId === user.id ? (
                         <div className={styles.editActions}>
                             <input
-                                type="number"
-                                value={editData.points}
-                                onChange={(e) => setEditData({ ...editData, points: parseInt(e.target.value) || 0 })}
+                                type="text"
+                                inputMode="numeric"
+                                value={editData.points === 0 ? '' : editData.points}
+                                placeholder="0"
+                                onChange={(e) => {
+                                    const val = parseInt(e.target.value.replace(/\D/g, '')) || 0;
+                                    setEditData({ ...editData, points: Math.max(0, val) });
+                                }}
                                 onFocus={(e) => e.target.select()}
                                 className={styles.inputPoints}
                             />

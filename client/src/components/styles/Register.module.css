@@ -20,6 +20,10 @@
     font-size: 15px;
     outline: none;
     transition: border-color 0.2s;
+    /* Safari resets the native select appearance so our styles apply consistently */
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    appearance: none;
 }
 
 .input:focus {

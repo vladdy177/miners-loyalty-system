@@ -30,7 +30,8 @@ const Register = ({ onRegistrationSuccess }) => {
     const { name, value } = e.target;
     if (value !== "" && !/^\d+$/.test(value)) return;
     const limit = name === "birthYear" ? 4 : 2;
-    const maxVal = name === "birthDay" ? 31 : name === "birthMonth" ? 12 : 2026;
+    const currentYear = new Date().getFullYear();
+    const maxVal = name === "birthDay" ? 31 : name === "birthMonth" ? 12 : currentYear;
 
     if (value.length <= limit) {
       if (value === "" || Number(value) <= maxVal) {
@@ -43,6 +44,12 @@ const Register = ({ onRegistrationSuccess }) => {
     e.preventDefault();
     if (!formData.birthDay || !formData.birthMonth || !formData.birthYear || formData.birthYear.length < 4) {
       setMessage("Please enter a valid birth date.");
+      return;
+    }
+    const currentYear = new Date().getFullYear();
+    const birthYear = parseInt(formData.birthYear);
+    if (birthYear < currentYear - 90 || birthYear > currentYear) {
+      setMessage(`Birth year must be between ${currentYear - 90} and ${currentYear - 10}.`);
       return;
     }
     try {
@@ -63,8 +70,8 @@ const Register = ({ onRegistrationSuccess }) => {
     <div className={styles.container}>
       <form onSubmit={handleSubmit} className={styles.formGroup}>
         {/* Personal Details */}
-        <input placeholder="First Name" name="firstName" required onChange={handleChange} className={styles.input} />
-        <input placeholder="Last Name" name="lastName" onChange={handleChange} className={styles.input} />
+        <input placeholder="First Name" name="firstName" required maxLength={30} onChange={handleChange} className={styles.input} />
+        <input placeholder="Last Name" name="lastName" maxLength={30} onChange={handleChange} className={styles.input} />
         <input placeholder="Email Address" type="email" name="email" required onChange={handleChange} className={styles.input} />
 
         {/* Gender */}

@@ -11,4 +11,17 @@ adminApi.interceptors.request.use(config => {
     return config;
 });
 
+// If any admin request returns 401 (expired or invalid token), clear the session
+// and reload the page so the login screen is shown
+adminApi.interceptors.response.use(
+    response => response,
+    error => {
+        if (error.response?.status === 401) {
+            localStorage.removeItem('admin_token');
+            window.location.reload();
+        }
+        return Promise.reject(error);
+    }
+);
+
 export default adminApi;

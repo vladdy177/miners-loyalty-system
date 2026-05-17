@@ -577,19 +577,24 @@ router.post('/branches/save', async (req, res) => {
     if (!name || !address || !city || !country) {
         return res.status(400).json({ error: 'name, address, city, and country are required' });
     }
+
+    // trim whitespace so "Czech Republic " and "Czech Republic" don't create duplicate regions
+    const normalizedCity    = city.trim();
+    const normalizedCountry = country.trim();
+
     try {
         await db.query('BEGIN');
 
-        // regions are shared — find existing one or create it if this is a new city
+        // case-insensitive lookup so "Prague" and "prague" resolve to the same region
         let regionRes = await db.query(
-            'SELECT id FROM regions WHERE name = $1 AND country = $2',
-            [city, country]
+            'SELECT id FROM regions WHERE LOWER(name) = LOWER($1) AND LOWER(country) = LOWER($2)',
+            [normalizedCity, normalizedCountry]
         );
         let regionId;
         if (regionRes.rows.length === 0) {
             const newRegion = await db.query(
                 'INSERT INTO regions (name, country) VALUES ($1, $2) RETURNING id',
-                [city, country]
+                [normalizedCity, normalizedCountry]
             );
             regionId = newRegion.rows[0].id;
         } else {
