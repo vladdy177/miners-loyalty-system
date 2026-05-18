@@ -62,9 +62,20 @@ const Register = ({ onRegistrationSuccess }) => {
     }
   };
 
-  const countries = [...new Set(allBranches.map(b => b.country))].filter(Boolean);
-  const cities = [...new Set(allBranches.filter(b => b.country === selectedCountry).map(b => b.city))].filter(Boolean);
-  const filteredBranches = allBranches.filter(b => b.city === selectedCity);
+  // Map-based dedup: case-insensitive + whitespace-safe so "Czech Republic" and "czech republic " appear only once
+  const countries = [...new Map(
+    allBranches.map(b => [b.country?.trim().toLowerCase(), b.country?.trim()])
+  ).values()].filter(Boolean).sort();
+
+  const cities = [...new Map(
+    allBranches
+      .filter(b => b.country?.trim().toLowerCase() === selectedCountry?.trim().toLowerCase())
+      .map(b => [b.city?.trim().toLowerCase(), b.city?.trim()])
+  ).values()].filter(Boolean).sort();
+
+  const filteredBranches = allBranches.filter(
+    b => b.city?.trim().toLowerCase() === selectedCity?.trim().toLowerCase()
+  );
 
   return (
     <div className={styles.container}>
