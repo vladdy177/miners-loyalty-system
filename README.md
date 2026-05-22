@@ -18,6 +18,12 @@ Bachelor's thesis project by Vladimir Mashkin, CTU FEL 2026.
 
 ---
 
+## Source Code
+
+GitHub: https://github.com/vladdy177/miners-loyalty-system
+
+---
+
 ## Project Structure
 
 ```
