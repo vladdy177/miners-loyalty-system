@@ -2,7 +2,7 @@ import axios from 'axios';
 
 const adminApi = axios.create();
 
-// Automatically attach the admin JWT token to every request
+// add JWT to every request so I don't have to do it manually each time
 adminApi.interceptors.request.use(config => {
     const token = localStorage.getItem('admin_token');
     if (token) {
@@ -11,8 +11,7 @@ adminApi.interceptors.request.use(config => {
     return config;
 });
 
-// If any admin request returns 401 (expired or invalid token), clear the session
-// and reload the page so the login screen is shown
+// 401 means token expired — clear it and reload so the login page shows up
 adminApi.interceptors.response.use(
     response => response,
     error => {

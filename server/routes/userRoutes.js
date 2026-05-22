@@ -237,7 +237,7 @@ router.post('/redeem-voucher', async (req, res) => {
         return res.status(400).json({ error: 'voucherId and email are required' });
     }
     try {
-        // fetch voucher with template title and current tier for upgrade validation
+        // need the template title to check if it's a tier upgrade (STATUS keyword)
         const ownerCheck = await db.query(`
             SELECT uv.id, vt.title, lc.tier, lc.id as card_id
             FROM user_vouchers uv

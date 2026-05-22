@@ -68,7 +68,6 @@ body {
     margin: 0;
     padding: 0;
     box-sizing: border-box;
-    /* remove the blue tap highlight on iOS Safari */
     -webkit-tap-highlight-color: transparent;
 }
 
@@ -80,7 +79,6 @@ textarea {
     font-size: inherit;
 }
 
-/* prevent text from being selected on tap for interactive elements */
 button,
 a,
 label {

@@ -447,7 +447,7 @@ router.post('/vouchers/assign-bulk', async (req, res) => {
         const template = templateRes.rows[0];
         const durationDays = parseInt(template.valid_duration_days, 10) || 30;
 
-        // segment filters are all optional, build the WHERE clause only for ones that are set
+        // filters are optional — only add to WHERE if the client actually sent them
         const queryParts = [];
         const values = [];
         let counter = 1;
