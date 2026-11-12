@@ -32,6 +32,11 @@ const buildLoyaltyObject = (user, activeVouchers = []) => {
         ? 'https://miners-loyalty-system-1.onrender.com'
         : 'http://localhost:5173';
 
+    // Google fetches wallet images from its own servers, so they must be on a
+    // publicly reachable host — localhost is never visible to Google. Serve the
+    // tier banners from the public GitHub repo so the card works in local dev too.
+    const bannerBaseUrl = 'https://raw.githubusercontent.com/vladdy177/miners-loyalty-system/main/client/public/banners';
+
     const voucherList = activeVouchers.length > 0
         ? activeVouchers.map(v => `- ${v.title}`).join('\n')
         : "No active vouchers";
@@ -53,7 +58,7 @@ const buildLoyaltyObject = (user, activeVouchers = []) => {
             balance: { string: fullName }
         },
         barcode: { type: 'QR_CODE', value: user.qr_code_token, alternateText: user.qr_code_token },
-        heroImage: { sourceUri: { uri: `${baseUrl}/banners/${tier.banner}` } },
+        heroImage: { sourceUri: { uri: `${bannerBaseUrl}/${tier.banner}` } },
         linksModuleData: {
             uris: [{
                 uri: `${baseUrl}/?email=${user.email}`,

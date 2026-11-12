@@ -107,7 +107,7 @@ const Stats = () => {
     return (
         <div className={styles.statsGrid}>
             <div className={styles.card}>
-                <h3>User Growth (30 Days)</h3>
+                <h3>User Growth (60 Days)</h3>
                 <Line data={{
                     labels: (data.growth || []).map(g => new Date(g.date).toLocaleDateString()),
                     datasets: [{

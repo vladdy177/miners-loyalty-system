@@ -3,6 +3,7 @@ const router = express.Router();
 const db = require('../config/db');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
+const rateLimit = require('express-rate-limit');
 const { syncWallet, triggerFullSync } = require('../walletService');
 const { verifyAdmin, JWT_SECRET } = require('../middleware/auth');
 
@@ -17,6 +18,15 @@ const { verifyAdmin, JWT_SECRET } = require('../middleware/auth');
 router.use((req, res, next) => {
     if (req.path === '/login' && req.method === 'POST') return next();
     verifyAdmin(req, res, next);
+});
+
+// brute-force protection: max 10 login attempts per IP per 15 minutes
+const loginLimiter = rateLimit({
+    windowMs: 15 * 60 * 1000,
+    limit: 10,
+    standardHeaders: 'draft-7',
+    legacyHeaders: false,
+    message: { error: 'Too many login attempts, please try again later' }
 });
 
 /**
@@ -55,7 +65,7 @@ router.use((req, res, next) => {
  *       401:
  *         description: Wrong credentials
  */
-router.post('/login', async (req, res) => {
+router.post('/login', loginLimiter, async (req, res) => {
     const { username, password } = req.body;
     if (!username || !password) {
         return res.status(400).json({ error: 'Username and password are required' });
@@ -155,26 +165,29 @@ router.post('/update-user', async (req, res) => {
     if (!userId || points === undefined || !tier) {
         return res.status(400).json({ error: 'userId, points, and tier are required' });
     }
+    const client = await db.connect();
     try {
-        await db.query('BEGIN');
-        await db.query(
+        await client.query('BEGIN');
+        await client.query(
             'UPDATE loyalty_cards SET points_balance = $1, tier = $2 WHERE user_id = $3',
             [points, tier, userId]
         );
-        await db.query('COMMIT');
+        await client.query('COMMIT');
         res.json({ success: true });
 
         // fire wallet sync after the response so admin doesn't wait for Google API
-        const emailRes = await db.query('SELECT email FROM users WHERE id = $1', [userId]);
+        const emailRes = await client.query('SELECT email FROM users WHERE id = $1', [userId]);
         if (emailRes.rows.length > 0) {
             setImmediate(() => {
                 triggerFullSync(emailRes.rows[0].email).catch(e => console.error('Wallet sync error:', e));
             });
         }
     } catch (err) {
-        await db.query('ROLLBACK');
+        await client.query('ROLLBACK');
         console.error('Admin update error:', err);
         res.status(500).json({ error: 'Update error' });
+    } finally {
+        client.release();
     }
 });
 
@@ -335,21 +348,24 @@ router.put('/vouchers/:id', async (req, res) => {
 });
 
 router.delete('/vouchers/:id', async (req, res) => {
+    // dedicated client — the refunds, deletes and commit must all run as one
+    // transaction on a single connection (see assign-bulk for why the pool breaks this)
+    const client = await db.connect();
     try {
-        await db.query('BEGIN');
+        await client.query('BEGIN');
 
-        const templateRes = await db.query(
+        const templateRes = await client.query(
             'SELECT cost, title FROM voucher_templates WHERE id = $1',
             [req.params.id]
         );
         if (templateRes.rows.length === 0) {
-            await db.query('ROLLBACK');
+            await client.query('ROLLBACK');
             return res.status(404).json({ error: 'Voucher template not found' });
         }
         const { cost, title } = templateRes.rows[0];
 
         // only refund users who bought it — gifted vouchers don't cost points so no refund needed
-        const activeRes = await db.query(`
+        const activeRes = await client.query(`
             SELECT uv.id, lc.id as card_id, u.email
             FROM user_vouchers uv
             JOIN users u ON uv.user_id = u.id
@@ -358,21 +374,21 @@ router.delete('/vouchers/:id', async (req, res) => {
         `, [req.params.id]);
 
         for (const row of activeRes.rows) {
-            await db.query(
+            await client.query(
                 'UPDATE loyalty_cards SET points_balance = points_balance + $1 WHERE id = $2',
                 [cost, row.card_id]
             );
-            await db.query(
+            await client.query(
                 'INSERT INTO point_logs (loyalty_card_id, amount, reason) VALUES ($1, $2, $3)',
                 [row.card_id, cost, `Refund: "${title}" was removed by admin`]
             );
         }
 
         // delete user_vouchers first — template delete would fail due to FK constraint otherwise
-        await db.query('DELETE FROM user_vouchers WHERE template_id = $1', [req.params.id]);
-        await db.query('DELETE FROM voucher_templates WHERE id = $1', [req.params.id]);
+        await client.query('DELETE FROM user_vouchers WHERE template_id = $1', [req.params.id]);
+        await client.query('DELETE FROM voucher_templates WHERE id = $1', [req.params.id]);
 
-        await db.query('COMMIT');
+        await client.query('COMMIT');
 
         // sync wallets after commit so the new balance shows up in Google Wallet
         for (const row of activeRes.rows) {
@@ -381,9 +397,11 @@ router.delete('/vouchers/:id', async (req, res) => {
 
         res.json({ success: true, refunded: activeRes.rows.length });
     } catch (err) {
-        await db.query('ROLLBACK');
+        await client.query('ROLLBACK');
         console.error(err);
         res.status(500).json({ error: 'Delete failed' });
+    } finally {
+        client.release();
     }
 });
 
@@ -436,12 +454,18 @@ router.delete('/vouchers/:id', async (req, res) => {
 router.post('/vouchers/assign-bulk', async (req, res) => {
     const { templateId, segment } = req.body;
 
-    try {
-        await db.query('BEGIN');
+    // Use a dedicated client so the whole BEGIN/INSERT/COMMIT runs on ONE
+    // connection. Running a transaction through the shared pool sends each
+    // statement to a possibly different connection, which lets two concurrent
+    // bulk requests interleave and roll back each other's inserts.
+    const client = await db.connect();
 
-        const templateRes = await db.query('SELECT * FROM voucher_templates WHERE id = $1', [templateId]);
+    try {
+        await client.query('BEGIN');
+
+        const templateRes = await client.query('SELECT * FROM voucher_templates WHERE id = $1', [templateId]);
         if (templateRes.rows.length === 0) {
-            await db.query('ROLLBACK');
+            await client.query('ROLLBACK');
             return res.status(404).json({ error: 'Template not found' });
         }
         const template = templateRes.rows[0];
@@ -473,7 +497,7 @@ router.post('/vouchers/assign-bulk', async (req, res) => {
 
         const whereClause = queryParts.length > 0 ? 'WHERE ' + queryParts.join(' AND ') : '';
 
-        const usersRes = await db.query(`
+        const usersRes = await client.query(`
             SELECT u.id, u.email FROM users u
             JOIN loyalty_cards lc ON u.id = lc.user_id
             JOIN branches b ON u.home_branch_id = b.id
@@ -483,20 +507,26 @@ router.post('/vouchers/assign-bulk', async (req, res) => {
 
         for (const user of usersRes.rows) {
             // parameterized interval — can't concat this directly or postgres complains
-            await db.query(`
+            await client.query(`
                 INSERT INTO user_vouchers (user_id, template_id, status, source, expires_at)
                 VALUES ($1, $2, 'active', 'gifted', NOW() + ($3 * INTERVAL '1 day'))
             `, [user.id, templateId, durationDays]);
-
-            triggerFullSync(user.email).catch(e => console.error('Wallet sync error:', e));
         }
 
-        await db.query('COMMIT');
+        await client.query('COMMIT');
         res.json({ success: true, count: usersRes.rows.length });
+
+        // sync wallets only after the transaction is committed, so we never
+        // push a card update for vouchers that ended up rolled back
+        for (const user of usersRes.rows) {
+            triggerFullSync(user.email).catch(e => console.error('Wallet sync error:', e));
+        }
     } catch (err) {
-        await db.query('ROLLBACK');
+        await client.query('ROLLBACK');
         console.error(err);
         res.status(500).json({ error: 'Assignment failed' });
+    } finally {
+        client.release();
     }
 });
 
@@ -713,7 +743,7 @@ router.get('/stats-summary', async (req, res) => {
             `),
             db.query(`
                 SELECT DATE_TRUNC('day', created_at) as date, COUNT(*) as count
-                FROM users WHERE created_at > NOW() - INTERVAL '30 days'
+                FROM users WHERE created_at > NOW() - INTERVAL '60 days'
                 GROUP BY date ORDER BY date ASC
             `),
             db.query(`

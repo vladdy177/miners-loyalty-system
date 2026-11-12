@@ -23,6 +23,7 @@
     "cors": "^2.8.6",
     "dotenv": "^17.3.1",
     "express": "^5.2.1",
+    "express-rate-limit": "^8.7.4",
     "googleapis": "^171.4.0",
     "jsonwebtoken": "^9.0.3",
     "nodemon": "^3.1.14",
@@ -31,7 +32,7 @@
     "swagger-ui-express": "^5.0.1"
   },
   "devDependencies": {
-    "jest": "^30.4.2",
+    "jest": "^30.5.2",
     "supertest": "^7.2.2"
   }
 }

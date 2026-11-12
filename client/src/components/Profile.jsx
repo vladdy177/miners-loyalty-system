@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback, useMemo } from "react";
+import React, { useState, useEffect, useCallback, useMemo, useRef } from "react";
 import axios from "axios";
 import { QRCodeSVG } from "qrcode.react";
 import { LogOut, History, Ticket } from "lucide-react";
@@ -22,6 +22,10 @@ const Profile = ({ email, onLogout }) => {
     const [now, setNow] = useState(() => Date.now());
     const [refreshTrigger, setRefreshTrigger] = useState(0);
     const apiUrl = import.meta.env.VITE_API_URL;
+
+    // tracks voucher ids currently being auto-redeemed so the per-second
+    // expiry check can't fire a second request before the first one finishes
+    const redeemingRef = useRef(new Set());
 
     const triggerRefresh = useCallback(() => {
         setRefreshTrigger(prev => prev + 1);
@@ -69,17 +73,31 @@ const Profile = ({ email, onLogout }) => {
     useEffect(() => {
         const checkExpiry = async () => {
             for (const [id, expiry] of Object.entries(activeTimers)) {
-                if (now >= expiry) {
+                // skip ids already in flight — prevents a double redeem (and a 403
+                // from the second request) when the timer ticks again mid-request
+                if (now >= expiry && !redeemingRef.current.has(id)) {
+                    redeemingRef.current.add(id);
                     try {
                         await axios.post(`${apiUrl}/api/users/redeem-voucher`, { voucherId: id, email });
+                        if (redeemingVoucher?.id === id) setRedeemingVoucher(null);
+                        triggerRefresh();
+                    } catch (e) {
+                        // 403/404 means the voucher is already used or no longer exists
+                        // (e.g. a stale timer left in localStorage). Don't keep retrying it.
+                        const status = e.response?.status;
+                        if (status !== 403 && status !== 404) {
+                            console.error("Auto-redeem failed", e);
+                        }
+                    } finally {
+                        // always drop the timer — a successful redeem is done, and a
+                        // stale/invalid one must be cleared so it can't fire again
                         setActiveTimers(prev => {
                             const updated = { ...prev };
                             delete updated[id];
                             return updated;
                         });
-                        if (redeemingVoucher?.id === id) setRedeemingVoucher(null);
-                        triggerRefresh();
-                    } catch (e) { console.error("Auto-redeem failed", e); }
+                        redeemingRef.current.delete(id);
+                    }
                 }
             }
         };

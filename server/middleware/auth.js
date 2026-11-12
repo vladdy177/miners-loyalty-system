@@ -1,6 +1,8 @@
 const jwt = require('jsonwebtoken');
 
-const JWT_SECRET = process.env.JWT_SECRET || 'miners-admin-secret-2026'; // fallback only for local dev
+const JWT_SECRET = process.env.JWT_SECRET
+    || (process.env.NODE_ENV === 'production' ? null : 'dev-only-secret');
+if (!JWT_SECRET) throw new Error('JWT_SECRET must be set in production');
 
 const verifyAdmin = (req, res, next) => {
     const authHeader = req.headers.authorization;

@@ -9,9 +9,10 @@ const request = require('supertest');
 const jwt     = require('jsonwebtoken');
 const app     = require('../app');
 const db      = require('../config/db');
+const { JWT_SECRET } = require('../middleware/auth');
 
 // Generate a valid admin token using the same secret as the middleware
-const ADMIN_TOKEN = jwt.sign({ role: 'admin', username: 'admin' }, 'miners-admin-secret-2026');
+const ADMIN_TOKEN = jwt.sign({ role: 'admin', username: 'admin' }, JWT_SECRET);
 const authHeader  = { Authorization: `Bearer ${ADMIN_TOKEN}` };
 
 beforeEach(() => jest.clearAllMocks());
@@ -101,8 +102,8 @@ describe('POST /api/users/redeem-voucher', () => {
 
     test('successfully redeems an active voucher', async () => {
         db.query
-            .mockResolvedValueOnce({ rows: [{ id: 'uv-1', title: 'FREE COFFEE', tier: 'STANDARD', card_id: 'card-1' }] }) // ownerCheck
             .mockResolvedValueOnce({})// BEGIN
+            .mockResolvedValueOnce({ rows: [{ id: 'uv-1', title: 'FREE COFFEE', tier: 'STANDARD', card_id: 'card-1' }] }) // ownerCheck FOR UPDATE
             .mockResolvedValueOnce({ rows: [] }) // UPDATE user_vouchers
             .mockResolvedValueOnce({}); // COMMIT
 
@@ -116,7 +117,9 @@ describe('POST /api/users/redeem-voucher', () => {
     });
 
     test('returns 403 when voucher does not belong to the user', async () => {
-        db.query.mockResolvedValueOnce({ rows: [] }); // ownerCheck returns empty
+        db.query
+            .mockResolvedValueOnce({}) // BEGIN
+            .mockResolvedValueOnce({ rows: [] }); // ownerCheck FOR UPDATE returns empty → ROLLBACK
 
         const res = await request(app)
             .post('/api/users/redeem-voucher')
@@ -127,8 +130,8 @@ describe('POST /api/users/redeem-voucher', () => {
 
     test('STATUS voucher upgrades tier on redemption', async () => {
         db.query
-            .mockResolvedValueOnce({ rows: [{ id: 'uv-2', title: 'SILVER STATUS', tier: 'STANDARD', card_id: 'card-1' }] }) // ownerCheck
             .mockResolvedValueOnce({}) // BEGIN
+            .mockResolvedValueOnce({ rows: [{ id: 'uv-2', title: 'SILVER STATUS', tier: 'STANDARD', card_id: 'card-1' }] }) // ownerCheck FOR UPDATE
             .mockResolvedValueOnce({ rows: [] }) // UPDATE loyalty_cards tier
             .mockResolvedValueOnce({ rows: [] }) // UPDATE user_vouchers
             .mockResolvedValueOnce({});// COMMIT
@@ -143,8 +146,8 @@ describe('POST /api/users/redeem-voucher', () => {
 
     test('STATUS upgrade blocked when tier sequence is violated', async () => {
         db.query
-            .mockResolvedValueOnce({ rows: [{ id: 'uv-3', title: 'GOLD STATUS', tier: 'STANDARD', card_id: 'card-1' }] }) // ownerCheck
             .mockResolvedValueOnce({}) // BEGIN
+            .mockResolvedValueOnce({ rows: [{ id: 'uv-3', title: 'GOLD STATUS', tier: 'STANDARD', card_id: 'card-1' }] }) // ownerCheck FOR UPDATE
             .mockResolvedValueOnce({});// ROLLBACK
 
         const res = await request(app)

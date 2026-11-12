@@ -21,8 +21,8 @@ const Dashboard = () => {
             bg: "var(--miners-red)"
         },
         {
-            title: "Points in Wallet",
-            value: data.economy.earned - data.economy.burned,
+            title: "Points spent by members",
+            value: data.economy.burned,
             icon: <Coins color="black" />,
             bg: "var(--miners-gold)"
         },

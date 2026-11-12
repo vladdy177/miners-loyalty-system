@@ -25,7 +25,9 @@ if (isProduction) {
 pool.on('connect', (client) => {
   client.query("SET client_encoding = 'UTF8'");
 });
-// Export the query function to be used in other files
+// Export the query function for single statements, plus connect() to grab a
+// dedicated client when a multi-statement transaction (BEGIN/COMMIT) is needed.
 module.exports = {
   query: (text, params) => pool.query(text, params),
+  connect: () => pool.connect(),
 };

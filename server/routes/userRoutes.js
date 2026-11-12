@@ -73,9 +73,13 @@ router.post('/register', async (req, res) => {
         return res.status(400).json({ error: 'Missing required fields' });
     }
 
+    // dedicated client so the user insert and loyalty card insert commit together
+    // as one transaction — on the shared pool they could land on different
+    // connections, leaving a user without a card if the second insert fails
+    const client = await db.connect();
     try {
-        await db.query('BEGIN');
-        const userResult = await db.query(
+        await client.query('BEGIN');
+        const userResult = await client.query(
             'INSERT INTO users (email, first_name, last_name, gender, birth_date, home_branch_id) VALUES ($1, $2, $3, $4, $5, $6) RETURNING id',
             [email, firstName, lastName, gender, birthDate, homeBranchId]
         );
@@ -84,17 +88,19 @@ router.post('/register', async (req, res) => {
         // use cryptographically secure random bytes instead of Math.random()
         const qrToken = `MINERS-${crypto.randomBytes(6).toString('hex').toUpperCase()}`;
 
-        await db.query(
+        await client.query(
             'INSERT INTO loyalty_cards (user_id, points_balance, qr_code_token, tier) VALUES ($1, 0, $2, $3)',
             [userId, qrToken, 'STANDARD']
         );
 
-        await db.query('COMMIT');
+        await client.query('COMMIT');
         res.status(201).json({ message: 'Success', email });
     } catch (err) {
-        await db.query('ROLLBACK');
+        await client.query('ROLLBACK');
         if (err.code === '23505') return res.status(400).json({ error: 'Email exists' });
         res.status(500).json({ error: 'Server Error' });
+    } finally {
+        client.release();
     }
 });
 
@@ -236,58 +242,68 @@ router.post('/redeem-voucher', async (req, res) => {
     if (!voucherId || !email) {
         return res.status(400).json({ error: 'voucherId and email are required' });
     }
+    // dedicated client so the ownership check, tier update and status change all
+    // run in one transaction on a single connection (see assign-bulk for why the
+    // shared pool breaks multi-statement transactions)
+    const client = await db.connect();
+
     try {
-        // need the template title to check if it's a tier upgrade (STATUS keyword)
-        const ownerCheck = await db.query(`
+        await client.query('BEGIN');
+
+        // lock the voucher row so two concurrent redeems can't both pass the
+        // active-status check; need the template title to detect a tier upgrade
+        const ownerCheck = await client.query(`
             SELECT uv.id, vt.title, lc.tier, lc.id as card_id
             FROM user_vouchers uv
             JOIN users u ON uv.user_id = u.id
             JOIN loyalty_cards lc ON u.id = lc.user_id
             JOIN voucher_templates vt ON uv.template_id = vt.id
             WHERE uv.id = $1 AND u.email = $2 AND uv.status = 'active'
+            FOR UPDATE OF uv
         `, [voucherId, email]);
 
         if (ownerCheck.rows.length === 0) {
+            await client.query('ROLLBACK');
             return res.status(403).json({ error: 'Voucher not found or access denied' });
         }
 
         const { title, tier, card_id } = ownerCheck.rows[0];
         const isUpgrade = title.includes('STATUS');
 
-        await db.query('BEGIN');
-
         if (isUpgrade) {
             const targetTier = title.split(' ')[0];
 
             if (targetTier === 'SILVER' && tier !== 'STANDARD') {
-                await db.query('ROLLBACK');
+                await client.query('ROLLBACK');
                 return res.status(400).json({ error: 'Upgrade to SILVER is only for STANDARD members' });
             }
             if (targetTier === 'GOLD' && tier !== 'SILVER') {
-                await db.query('ROLLBACK');
+                await client.query('ROLLBACK');
                 return res.status(400).json({ error: 'You must unlock SILVER before upgrading to GOLD' });
             }
             if (tier === 'GOLD') {
-                await db.query('ROLLBACK');
+                await client.query('ROLLBACK');
                 return res.status(400).json({ error: 'You have already reached the maximum tier' });
             }
 
-            await db.query('UPDATE loyalty_cards SET tier = $1 WHERE id = $2', [targetTier, card_id]);
+            await client.query('UPDATE loyalty_cards SET tier = $1 WHERE id = $2', [targetTier, card_id]);
         }
 
-        await db.query(
+        await client.query(
             "UPDATE user_vouchers SET status = 'used', redeemed_at = NOW() WHERE id = $1",
             [voucherId]
         );
 
-        await db.query('COMMIT');
+        await client.query('COMMIT');
 
         triggerFullSync(email).catch(e => console.error('Sync after redeem failed', e));
         res.json({ success: true, tierUpgraded: isUpgrade });
     } catch (err) {
-        await db.query('ROLLBACK');
+        await client.query('ROLLBACK');
         console.error(err);
         res.status(500).json({ error: 'Redemption failed' });
+    } finally {
+        client.release();
     }
 });
 
